@@ -1,0 +1,5 @@
+---
+- hosts: jitsivideobride
+  roles:
+    - jitsicommon
+    - videobridge

@@ -1,0 +1,13 @@
+# systemd socket definition file
+[Unit]
+Description=Check_MK Agent Socket
+
+[Socket]
+ListenStream={{ internal_interface }}:6556
+IPAccounting=true
+#IPAddressAllow=10.0.1.2
+Accept=true
+MaxConnectionsPerSource=3
+
+[Install]
+WantedBy=sockets.target

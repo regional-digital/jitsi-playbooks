@@ -1,0 +1,17 @@
+---
+- name: create group jitsi
+  group:
+    name: jitsi
+    state: present
+
+- name: adding existing users to group jitsi
+  user:
+    name: '{{ item }}'
+    groups: jitsi
+    append: yes
+  with_items: "{{ users }}"
+
+- name: Install Jitsi Repo signing key
+  apt_key:
+    url: https://download.jitsi.org/jitsi-key.gpg.key 
+    state: present

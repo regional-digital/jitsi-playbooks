@@ -1,0 +1,65 @@
+videobridge {
+    apis {
+        rest {
+            # enable colibri rest interface
+            enabled = true
+        }
+        xmpp-client {
+            configs {
+                shard1 {
+                    hostname = "signal01.{{ dnsdomain }}"
+                    domain = "auth.open.jitsi"
+                    username = "jvb"
+                    password = "{{ prosody_user_jvb_password }}"
+                    muc_jids = "JvbBrewery@internal.auth.open.jitsi"
+                    muc_nickname = "{{ hostname }}"
+                    disable_certificate_verification = true
+                }
+                shard2 {
+                    hostname = "signal02.{{ dnsdomain }}"
+                    domain = "auth.open.jitsi"
+                    username = "jvb"
+                    password = "{{ prosody_user_jvb_password }}"
+                    muc_jids = "JvbBrewery@internal.auth.open.jitsi"
+                    muc_nickname = "{{ hostname }}"
+                    disable_certificate_verification = true
+                }
+                secureshard1 {
+                    hostname = "securesignal01.{{ dnsdomain }}"
+                    domain = "auth.closed.jitsi"
+                    username = "jvb"
+                    password = "{{ prosody_user_jvb_password }}"
+                    muc_jids = "JvbBrewery@internal.auth.closed.jitsi"
+                    muc_nickname = "{{ hostname }}"
+                    disable_certificate_verification = true
+                }
+            }
+        }
+    }
+    http-servers {
+        private {
+            host = "0.0.0.0"
+            port = "9000"
+        }
+        public {
+            port = "9090"
+        }
+    }
+    octo {
+        enabled = true
+        bind-address = "{{ internal_interface }}"
+        bind-port = "4096"
+        region = "BW"
+    }
+    rest {
+        shutdown {
+            enabled = true
+        }
+    }
+    websockets {
+        enabled = true
+        domain = "{{ frontenddnsname }}:443"
+        server-id = "{{ hostname }}"
+        tls = true
+    }
+}

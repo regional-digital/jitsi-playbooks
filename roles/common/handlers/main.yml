@@ -1,0 +1,5 @@
+---
+- name: systemctl apply
+  shell: sysctl --system
+- name: netplan apply
+  shell: netplan apply

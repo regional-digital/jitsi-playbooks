@@ -1,0 +1,413 @@
+---
+- name: message that this will not deploy wwwroot any more
+  debug:
+    msg: This role will not deploy wwwroot-content any more. use role frontendserver-wwwroot instead but it will terribly fail if you don't run this role before
+
+- name: Install prosody repository signing key
+  apt_key:
+    url: https://prosody.im/files/prosody-debian-packages.key
+    state: present
+
+- name: Install prosody repository
+  apt_repository:
+    repo: deb http://packages.prosody.im/debian focal main
+    state: present
+    filename: 99_prosody
+    update_cache: yes
+
+- name: install prosody
+  package:
+    name:
+      - prosody-0.11
+
+- name: Set debconf-answers for jitsi-meet-web-config
+  debconf:
+    name: "{{ item.name }}"
+    question: "{{ item.question }}"
+    value: "{{ item.value }}"
+    vtype: "{{ item.vtype }}"
+  loop:
+    - { name: 'jitsi-meet-web-config', question: 'jitsi-meet/jvb-hostname', value: '{{ hostname }}', vtype: 'string' }
+    - { name: 'jitsi-meet-web-config', question: 'jitsi-videobridge/jvb-hostname', value: '{{ hostname }}', vtype: 'string' }
+    - { name: 'jitsi-meet-web-config', question: 'jitsi-meet/cert-choice', value: 'Generate a new self-signed certificate (You will later get a chance to obtain a Let''s encrypt certificate)', vtype: 'string' }
+
+- name: install stuff
+  apt:
+    name:
+      - nginx
+      - libpcre3
+      - zlib1g
+      - lua-sec
+      - lua-event
+      - certbot
+      - python3-certbot-nginx
+      - openjdk-14-jre-headless
+      - python3-pexpect
+
+- name: Copy Jitsi Package to host
+  ansible.builtin.copy:
+    src: files/{{ item }}
+    dest: "{{ item }}"
+    owner: root
+    group: root
+    mode: '0600'
+    backup: yes
+  with_items:
+    - jicofo_1.0-692-hf-1_all.deb
+    - jitsi-meet-web_1.0.4900-1_all.deb
+    - jitsi-meet-web-config_1.0.4900-1_all.deb
+    - jitsi-meet-prosody_1.0.4900-1_all.deb
+    - jitsi-meet-tokens_1.0.4900-1_all.deb
+
+- name: Install Jitsi Packages
+  apt:
+    deb: "{{ item }}"
+  with_items:
+    - jicofo_1.0-692-hf-1_all.deb
+    - jitsi-meet-web_1.0.4900-1_all.deb
+    - jitsi-meet-web-config_1.0.4900-1_all.deb
+    - jitsi-meet-prosody_1.0.4900-1_all.deb
+    - jitsi-meet-tokens_1.0.4900-1_all.deb
+
+- name: create /etc/systemd/system/prosody.service.d
+  file:
+    state: directory
+    dest: /etc/systemd/system/prosody.service.d
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: generate /etc/systemd/system/prosody.service.d/override.conf
+  template:
+    src: systemd/system/prosody.service.d/override.conf.j2
+    dest: /etc/systemd/system/prosody.service.d/override.conf
+    owner: root
+    group: adm
+    mode: "0664"
+    backup: yes
+  notify:
+    - reload systemd
+    - restart prosody
+
+- name: /etc/nginx/nginx.conf
+  template:
+    src: nginx/etc/nginx/nginx.conf.j2
+    dest: /etc/nginx/nginx.conf
+    owner: root
+    group: adm
+    mode: "0770"
+    backup: yes
+  notify:
+    - reload nginx
+
+- name: /etc/nginx/conf.d/prosody_upstream.conf
+  template:
+    src: nginx/etc/nginx/conf.d/prosody_upstream.conf.j2
+    dest: /etc/nginx/conf.d/prosody_upstream.conf
+    owner: root
+    group: adm
+    mode: "0770"
+    backup: yes
+  when: cluster_partner is defined
+  notify:
+    - reload nginx
+
+- name: Create wwwroot-directory for jitsi-meet
+  ansible.builtin.file:
+    path: /var/www/jitsi-meet
+    state: directory
+    owner: www-data
+    group: www-data
+    mode: '0775'
+
+- name: Remove default nginx config
+  file: name=/etc/nginx/sites-enabled/default state=absent
+
+- name: Remove default nginx website
+  file: name=/var/www/html state=absent
+
+- name: create /var/log/nginx/vts.db belonging to www-data:adm 
+  ansible.builtin.file:
+    path: /var/log/nginx/vts.db
+    owner: www-data 
+    group: adm
+    state: file
+    mode: '0644'
+
+- name: generate /etc/nginx/sites-available/vts-module.conf
+  template:
+    src: nginx/etc/nginx/sites-available/vts-module.conf.j2
+    dest: /etc/nginx/sites-available/vts-module.conf
+    owner: root
+    group: adm
+    mode: "0664"
+    backup: yes
+  notify:
+    - reload nginx
+
+- name: activate vts-module
+  ansible.builtin.file:
+    src: /etc/nginx/sites-available/vts-module.conf
+    dest: /etc/nginx/sites-enabled/vts-module.conf
+    state: link
+    backup: yes
+  notify:
+    - reload nginx
+
+- name: Create modules directory for dynamic nginx modules
+  ansible.builtin.file:
+    path: /etc/nginx/modules
+    state: directory
+    owner: root
+    group: adm
+    mode: '0644'
+
+- name: copy nginx vhost traffic status module
+  ansible.builtin.copy:
+    src: files/ngx_http_vhost_traffic_status_module.so
+    dest: /etc/nginx/modules/ngx_http_vhost_traffic_status_module.so
+    owner: root
+    group: adm
+    mode: '0664'
+    backup: yes
+  notify:
+    - reload nginx
+
+- name: create /var/www/letsencrypt
+  ansible.builtin.file:
+    path: /var/www/letsencrypt
+    state: directory
+    owner: www-data
+    group: www-data
+    mode: '0755'
+
+- name: generate /etc/nginx/sites-available/default-site.conf
+  template:
+    src: nginx/etc/nginx/sites-available/default-site.conf.j2
+    dest: /etc/nginx/sites-available/default-site.conf
+    owner: root
+    group: adm
+    mode: "0664"
+    backup: yes
+  notify:
+    - reload nginx
+
+- name: activate default-site (needed for getting letsencrypt-certs before able to activate instance-site-config)
+  ansible.builtin.file:
+    src: /etc/nginx/sites-available/default-site.conf
+    dest: /etc/nginx/sites-enabled/default-site.conf
+    state: link
+    backup: yes
+  notify:
+    - reload nginx
+
+- name: check if certificate of signaling server exists in letsencrypt folder
+  stat: 
+    path: /etc/letsencrypt/live/{{ fqdn }}/fullchain.pem
+  register: letsencrypt_cert_exists
+
+- name: check if certificate of signaling server exists on ansible server
+  local_action: stat path={{ filePathPrefix }}/certs/{{ fqdn }}.fullchain.pem
+  register: cert_exists_local
+  when: letsencrypt_cert_exists.stat.exists == False
+
+- name: create /etc/letsencrypt/live/{{ fqdn }}/
+  file:
+    state: directory
+    dest: /etc/letsencrypt/live/{{ fqdn }}/
+    owner: root
+    group: root
+    mode: "0755"
+  when: letsencrypt_cert_exists.stat.exists == False and cert_exists_local.stat.exists == True
+
+- name: copy certificate from ansible host to server
+  ansible.builtin.copy:
+    src: "{{ filePathPrefix }}/certs/{{ fqdn }}.fullchain.pem"
+    dest: /etc/letsencrypt/live/{{ fqdn }}/fullchain.pem
+    owner: root
+    group: root
+    mode: '0644'
+    backup: yes
+  when: letsencrypt_cert_exists.stat.exists == False and cert_exists_local.stat.exists == True
+
+- name: copy private key from ansible host to server
+  ansible.builtin.copy:
+    src: "{{ filePathPrefix }}/certs/{{ fqdn }}.privkey.pem"
+    dest: /etc/letsencrypt/live/{{ fqdn }}/privkey.pem
+    owner: root
+    group: root
+    mode: '0600'
+    backup: yes
+  when: letsencrypt_cert_exists.stat.exists == False and cert_exists_local.stat.exists == True
+
+- name: Create letsencrypt certificate for signaling-server
+  shell: certbot certonly -n --webroot -w /var/www/letsencrypt -m {{ letsencrypt_email }} --agree-tos -d {{ fqdn }}
+  args:
+    creates: /etc/letsencrypt/live/{{ fqdn }}
+  when: letsencrypt_cert_exists.stat.exists == False and cert_exists_local.stat.exists == False
+
+- name: recheck if certificate of signaling server exists in letsencrypt folder
+  stat: 
+    path: /etc/letsencrypt/live/{{ fqdn }}/fullchain.pem
+  register: letsencrypt_cert_exists
+
+- name: generate /etc/nginx/sites-available/default-site-ssl.conf
+  template:
+    src: nginx/etc/nginx/sites-available/default-site-ssl.conf.j2
+    dest: /etc/nginx/sites-available/default-site-ssl.conf
+    owner: root
+    group: adm
+    mode: "0664"
+    backup: yes
+  when: letsencrypt_cert_exists.stat.exists == True
+  notify:
+    - reload nginx
+
+- name: activate default-site-ssl (needed for getting letsencrypt-certs before able to activate instance-site-config)
+  ansible.builtin.file:
+    src: /etc/nginx/sites-available/default-site-ssl.conf
+    dest: /etc/nginx/sites-enabled/default-site-ssl.conf
+    owner: root
+    group: adm
+    mode: '0664'
+    state: link
+    backup: yes
+  notify:
+    - reload nginx
+
+- name: generate /etc/jitsi/jicofo/config
+  template:
+    src: jicofo/config.j2
+    dest: /etc/jitsi/jicofo/config
+    owner: jicofo
+    group: jitsi
+    mode: "0644"
+    backup: yes
+  notify:
+    - restart jicofo
+
+- name: generate /etc/jitsi/jicofo/jicofo.conf
+  template:
+    src: jicofo/jicofo.conf.j2
+    dest: /etc/jitsi/jicofo/jicofo.conf
+    owner: jicofo
+    group: jitsi
+    mode: "0644"
+    backup: yes
+  notify:
+    - restart jicofo
+
+- name: generate /etc/jitsi/jicofo/sip-communicator.properties
+  template:
+    src: jicofo/sip-communicator.properties.j2
+    dest: /etc/jitsi/jicofo/sip-communicator.properties
+    owner: jicofo
+    group: jitsi
+    mode: "0600"
+    backup: yes
+  notify:
+    - restart jicofo
+
+- name: delete default prosody file
+  ansible.builtin.file:
+    path: /etc/prosody/conf.d/{{ inventory_hostname }}.cfg.lua
+    state: absent
+
+- name: generate /etc/prosody/conf.d/{{ shardName }}.cfg.lua
+  template:
+    src: prosody/etc/prosody/conf.d/{{ shardName }}.cfg.lua.j2
+    dest: /etc/prosody/conf.d/{{ shardName }}.cfg.lua
+    owner: prosody
+    group: prosody
+    mode: "0664"
+    backup: yes
+  notify:
+    - restart prosody 
+
+- name: /etc/prosody/prosody.cfg.lua
+  template:
+    src: prosody/etc/prosody/{{shardName}}.prosody.cfg.lua.j2
+    dest: /etc/prosody/prosody.cfg.lua
+    owner: root
+    group: prosody
+    mode: "0640"
+    backup: yes
+  notify:
+    - restart prosody
+
+- name: generate prosody key for {{ shardName }}
+  command: prosodyctl cert key {{ shardName }} 2048
+  args: 
+    creates: /var/lib/prosody/{{ shardName }}.key
+  notify:
+    - restart prosody
+
+- name: generate prosody certs for {{ shardName }}
+  expect:
+    command: prosodyctl cert generate {{ shardName }}
+    responses:
+      (.*)exists, do you want to replace it(.*): "n"
+      (.*)countryName(.*): ""
+      (.*)localityName(.*): ""
+      (.*)organizationName(.*): ""
+      (.*)organizationalUnitName(.*): ""
+      (.*)commonName(.*): ""
+      (.*)emailAddress(.*): ""
+  args: 
+    creates: /var/lib/prosody/{{ shardName }}.crt
+  notify:
+    - restart prosody
+
+- name: generate prosody key for auth.{{ shardName }}
+  command: prosodyctl cert key auth.{{ shardName }} 2048
+  args: 
+    creates: /var/lib/prosody/auth.{{ shardName }}.key
+
+- name: generate prosody certs for auth.{{ shardName }}
+  expect:
+    command: prosodyctl cert generate auth.{{ shardName }}
+    responses:
+      (.*)exists, do you want to replace it(.*): "n"
+      (.*)countryName(.*): ""
+      (.*)localityName(.*): ""
+      (.*)organizationName(.*): ""
+      (.*)organizationalUnitName(.*): ""
+      (.*)commonName(.*): ""
+      (.*)emailAddress(.*): ""
+  args: 
+    creates: /var/lib/prosody/auth.{{ shardName }}.crt
+
+- name: link prosodyfiles
+  ansible.builtin.file:
+    src: /var/lib/prosody/{{item}}
+    dest: /etc/prosody/certs/{{item}}
+    state: link
+    backup: yes
+  with_items:
+    - "auth.{{ shardName }}.crt"
+    - "auth.{{ shardName }}.key"
+    - "{{ shardName }}.crt"
+    - "{{ shardName }}.key"
+  notify:
+    - restart prosody
+
+- name: Remove default prosody stuff
+  file:
+    name: "{{ item }}"
+    state: absent
+  with_items:
+    - /etc/prosody/conf.d/{{ hostname }}.crt
+    - /etc/prosody/conf.d/{{ hostname }}.key
+    - /etc/prosody/conf.d/auth.{{ hostname }}.crt
+    - /etc/prosody/conf.d/auth.{{ hostname }}.key
+    - /etc/prosody/conf.d/{{ hostname }}.cfg.lua
+
+- name: register user jvb in prosody domain auth.{{ shardName }}
+  command: prosodyctl register jvb auth.{{ shardName }} {{ prosody_user_jvb_password }}
+  args: 
+    creates: /var/lib/prosody/auth%2e{{ shardNameShort }}%2ejitsi/accounts/jvb.dat
+
+- name: register user focus in prosody domain auth.{{ shardName }}
+  command: prosodyctl register focus auth.{{ shardName }} {{ prosody_user_focus_password }}
+  args:
+    creates: /var/lib/prosody/auth%2e{{ shardNameShort }}%2ejitsi/accounts/focus.dat

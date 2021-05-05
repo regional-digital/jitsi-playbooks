@@ -1,0 +1,13 @@
+- name: set instanceVars for {{ instance }}
+  set_fact:
+    instanceVars: '{{ instancevars[instance] }}'
+  when: instancevars[instance] is defined
+
+- name: copy wwwroot of instance {{ instance }}
+  ansible.builtin.copy:
+    src: files/jitsi-www/instances/{{ instance }}/wwwroot/
+    dest: /var/www/jitsi-meet-{{ instance }}
+    local_follow: False
+    owner: www-data
+    group: www-data
+    mode: '0755'

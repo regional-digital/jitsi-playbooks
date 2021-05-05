@@ -1,0 +1,4 @@
+---
+- hosts: jitsisignal
+  roles:
+    - instances-wwwroot

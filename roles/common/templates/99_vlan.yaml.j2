@@ -1,0 +1,11 @@
+network:
+  vlans:
+    {{ ansible_default_ipv4.interface }}.4000:
+      id: {{ privateVLANID }}
+      link: {{ ansible_default_ipv4.interface }}
+      mtu: 1400
+      addresses:
+        - {{ private_vlan_ip }}
+      routes:
+        - to: "{{ privateVLANGeometry }}"
+          via: "{{ privateVLANGateway }}"

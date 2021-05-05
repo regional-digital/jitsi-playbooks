@@ -1,0 +1,188 @@
+server {
+    location ^~ /.well-known/acme-challenge/ {
+        default_type "text/plain";
+        root /var/www/letsencrypt;
+{% if cluster_partner is defined %}
+        try_files $uri @le_forward;
+{% endif %}
+        break;
+    }
+{% if cluster_partner is defined %}
+    location @le_forward {
+        proxy_pass http://{{ cluster_partner }};
+        proxy_ssl_verify off;
+    }
+{% endif %}
+{% for domainname in domainNames %}
+    if ($host = {{ domainname }}) {
+        return 301 https://$host$request_uri;
+    } # managed by Certbot
+
+{% endfor %}
+    listen 80;
+    listen [::]:80;
+    server_name{% for domainname in domainNames %} {{ domainname }}{% endfor %};
+}
+server {
+    listen 443 ssl;
+    listen [::]:443 ssl;
+    server_name{% for domainname in domainNames %} {{ domainname }}{% endfor %};
+
+    ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
+    ssl_prefer_server_ciphers on;
+    ssl_ciphers "EECDH+ECDSA+AESGCM:EECDH+aRSA+AESGCM:EECDH+ECDSA+SHA256:EECDH+aRSA+SHA256:EECDH+ECDSA+SHA384:EECDH+ECDSA+SHA256:EECDH+aRSA+SHA384:EDH+aRSA+AESGCM:EDH+aRSA+SHA256:EDH+aRSA:EECDH:!aNULL:!eNULL:!MEDIUM:!LOW:!3DES:!MD5:!EXP:!PSK:!SRP:!DSS:!RC4:!SEED";
+
+    add_header Strict-Transport-Security "max-age=31536000";
+
+    root /var/www/jitsi-meet-{{ item }};
+
+    # ssi on with javascript for multidomain variables in config.js
+    ssi on;
+    ssi_types application/x-javascript application/javascript;
+
+    index index.html index.htm;
+    error_page 404 /static/404.html;
+
+    gzip on;
+    gzip_types text/plain text/css application/javascript application/json;
+    gzip_vary on;
+
+{% if instanceVars.dialInNumbers is defined %}
+    location = /numbers.json {
+        alias /etc/jitsi/meet/numbers-{{ item }}.json;
+        vhost_traffic_status_bypass_stats on;
+    }
+
+    location = /conferenceMapper {
+        proxy_pass http://10.0.0.103:8001/conferenceMapper?$query_string;
+        vhost_traffic_status_bypass_stats on;
+    }
+
+{% endif %}
+    location = /config.js {
+        alias /etc/jitsi/meet/{{ item }}-config.js;
+    }
+
+    location = /external_api.js {
+        alias /var/www/jitsi-meet-{{ item }}/libs/external_api.min.js;
+    }
+
+    location ^~ /.well-known/acme-challenge/ {
+        default_type "text/plain";
+        root /var/www/letsencrypt;
+{% if cluster_partner is defined %}
+        try_files $uri @le_forward;
+{% endif %}
+        break;
+    }
+{% if cluster_partner is defined %}
+    location @le_forward {
+        proxy_pass http://{{ cluster_partner }};
+        proxy_ssl_verify off;
+    }
+{% endif %}
+
+    #ensure all static content can always be found first
+    location ~ ^/(libs|css|static|images|fonts|lang|sounds|connection_optimization)/(.*)$
+    {
+        add_header 'Access-Control-Allow-Origin' '*';
+        alias /var/www/jitsi-meet-{{ item }}/$1/$2;
+    }
+
+    # BOSH
+    location = /http-bind {
+{% if cluster_partner is defined %}
+        proxy_pass      http://prosody_upstream/http-bind;
+{% else %}
+        proxy_pass      http://{{ fqdn }}:5280/http-bind;
+{% endif %}
+        proxy_next_upstream  off;
+        proxy_set_header X-Forwarded-For $remote_addr;
+        #proxy_set_header Host $http_host;
+        proxy_set_header Host open.jitsi;
+        vhost_traffic_status_bypass_stats on;
+    }
+
+    # xmpp websockets
+    location = /xmpp-websocket {
+       add_header Access-Control-Allow-Origin '*';
+{% if cluster_partner is defined %}
+       proxy_pass http://prosody_upstream/xmpp-websocket?prefix=$prefix&$args;
+{% else %}
+       proxy_pass http://{{ fqdn }}:5280/xmpp-websocket?prefix=$prefix&$args;
+{% endif %}
+       proxy_next_upstream  off;
+       proxy_http_version 1.1;
+       proxy_set_header Upgrade $http_upgrade;
+       proxy_set_header Connection "upgrade";
+       #proxy_set_header Host $http_host;
+       proxy_set_header Host open.jitsi;
+       tcp_nodelay on;
+       proxy_read_timeout      900s;
+       proxy_connect_timeout   900s;
+       proxy_send_timeout      900s;
+       send_timeout            900s;
+       vhost_traffic_status_bypass_stats on;
+    }
+
+    # Enable websockets to bridges
+    location ~ ^/colibri-ws/jvb([0-9]+)/(.*) {
+       resolver 127.0.0.53;
+       proxy_pass http://jvb$1.{{ dnsdomain }}:9090/colibri-ws/jvb$1/$2$is_args$args;
+       proxy_http_version 1.1;
+       proxy_set_header Upgrade $http_upgrade;
+       proxy_set_header Connection "Upgrade";
+       tcp_nodelay on;
+       proxy_read_timeout      900s;
+       proxy_connect_timeout   900s;
+       proxy_send_timeout      900s;
+       send_timeout            900s;
+       vhost_traffic_status_bypass_stats on;
+    }
+
+    location ~ ^/([^/?&:'"]+)$ {
+        try_files $uri @root_path;
+    }
+
+    location @root_path {
+        rewrite ^/(.*)$ / break;
+    }
+
+    location ~ ^/([^/?&:'"]+)/config.js$
+    {
+       set $subdomain "$1.";
+       set $subdir "$1/";
+
+       alias /etc/jitsi/meet/{{ item }}-config.js;
+    }
+
+    #Anything that didn't match above, and isn't a real file, assume it's a room name and redirect to /
+    location ~ ^/([^/?&:'"]+)/(.*)$ {
+        set $subdomain "$1.";
+        set $subdir "$1/";
+        rewrite ^/([^/?&:'"]+)/(.*)$ /$2;
+    }
+
+    # BOSH for subdomains
+    location ~ ^/([^/?&:'"]+)/http-bind {
+        set $subdomain "$1.";
+        set $subdir "$1/";
+        set $prefix "$1";
+
+        rewrite ^/(.*)$ /http-bind;
+        vhost_traffic_status_bypass_stats on;
+    }
+
+    # websockets for subdomains
+    location ~ ^/([^/?&:'"]+)/xmpp-websocket {
+        set $subdomain "$1.";
+        set $subdir "$1/";
+        set $prefix "$1";
+
+        rewrite ^/(.*)$ /xmpp-websocket;
+        vhost_traffic_status_bypass_stats on;
+    }
+    ssl_certificate /etc/letsencrypt/live/{{ item }}/fullchain.pem; # managed by Certbot
+    ssl_certificate_key /etc/letsencrypt/live/{{ item }}/privkey.pem; # managed by Certbot
+
+}

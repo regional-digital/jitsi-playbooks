@@ -1,0 +1,19 @@
+server {
+    listen 80 default_server;
+    listen [::]:80 default_server;
+    location ^~ /.well-known/acme-challenge/ {
+{% if cluster_partner is defined %}
+        try_files $uri @le_forward;
+{% endif %}
+        default_type "text/plain";
+    }
+{% if cluster_partner is defined %}
+    location @le_forward {
+        proxy_pass http://{{ cluster_partner }};
+        proxy_set_header X-Forwarded-For $remote_addr;
+        proxy_set_header Host $host;
+        proxy_ssl_verify off;
+    }
+{% endif %}
+    root /var/www/letsencrypt;
+}

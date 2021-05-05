@@ -1,0 +1,7 @@
+---
+- name: netplan apply
+  shell: netplan apply
+- name: telegraf restart
+  service: 
+    name: telegraf
+    state: restarted

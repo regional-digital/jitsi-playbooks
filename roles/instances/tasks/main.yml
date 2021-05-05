@@ -1,0 +1,15 @@
+---
+- name: message how to target single instance
+  debug:
+    msg: You can target a single instance only with --extra-vars "instance=instancename"
+  when: instance is not defined
+
+- name: message that this will not deploy wwwroot any more
+  debug:
+    msg: This role will not deploy wwwroot-content of instances any more. use role instances-wwwroot instead but it will terribly fail if you don't run this role before
+
+# ansible-playbook instances.yml --extra-vars "instance=instancename"
+- name: copy files for instances
+  include: include.yml instance={{ item }}
+  loop: "{{ instances }}"
+  when: instance is not defined or instance == item

@@ -1,0 +1,7 @@
+---
+- name: restart check_mk
+  command: "{{ item }}"
+  with_items:
+  - systemctl daemon-reload
+  - systemctl enable check_mk.socket
+  - systemctl restart check_mk.socket

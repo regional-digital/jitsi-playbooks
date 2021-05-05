@@ -1,0 +1,12 @@
+---
+- hosts: all
+  gather_facts: false
+  roles:
+    - common_ssh
+- hosts: all
+  gather_facts: true
+  roles:
+    - common
+    - cronapt
+    - telegraf
+    - nagios_agent

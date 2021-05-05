@@ -1,0 +1,18 @@
+---
+#INFO: skip or copy wwwroot with tag "copywwwroot"
+# ansible-playbook frontendserver.yml --skip-tags "copywwwroot"
+# ansible-playbook frontendserver.yml --tags "copywwwroot" --extra-vars "instance=instancename"
+
+- name: copy master-wwwroot
+  ansible.builtin.copy:
+    src: files/jitsi-www/base/jitsi-meet
+    dest: /var/www
+    owner: www-data
+    group: www-data
+    mode: '0755'
+    backup: yes
+    local_follow: False
+  tags:
+    - copywwwroot
+  when: instance is not defined 
+

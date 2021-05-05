@@ -1,0 +1,10 @@
+---
+- name: message how to target single instance
+  debug:
+    msg: You can target a single instance only with --extra-vars "instance=instancename"
+  when: instance is not defined
+
+- name: copy files for instances
+  include: include.yml instance={{ item }}
+  loop: "{{ instances }}"
+  when: instance is not defined or instance == item
