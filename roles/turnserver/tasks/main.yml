@@ -1,0 +1,60 @@
+---
+- include_role:
+    name: acme.sh
+
+- name: install coturn
+  apt:
+    name:
+      - coturn
+
+- name: generate /etc/coturn/turnserver.conf
+  template:
+    src: turnserver.conf.j2
+    dest: /etc/coturn/turnserver.conf
+    owner: root
+    group: root
+    mode: "0644"
+    backup: yes
+  notify:
+    - restart coturn
+
+- name: generate /etc/coturn/default.conf
+  template:
+    src: default.conf.j2
+    dest: /etc/coturn/default.conf
+    owner: root
+    group: root
+    mode: "0664"
+    backup: yes
+  notify:
+    - restart coturn
+
+- name: create certificate
+  shell: acme.sh --issue --standalone -d {{ turnservername }} --listen-v4
+  args:
+    warn: false
+    creates: /root/.acme.sh/{{ turnservername }}/fullchain.cer
+
+- name: copy key to coturn directory
+  ansible.builtin.copy:
+    src: /root/.acme.sh/{{ turnservername }}/{{ turnservername }}.key
+    dest: /etc/coturn/certs/{{ turnservername }}.privkey.pem
+    owner: turnserver
+    group: turnserver
+    mode: '0400'
+    backup: yes
+    remote_src: yes
+  notify:
+    - restart coturn
+
+- name: copy cert to coturn directory
+  ansible.builtin.copy:
+    src: /root/.acme.sh/{{ turnservername }}//fullchain.cer
+    dest: /etc/coturn/certs/{{ turnservername }}.fullchain.pem
+    owner: turnserver
+    group: turnserver
+    mode: '0400'
+    backup: yes
+    remote_src: yes
+  notify:
+    - restart coturn

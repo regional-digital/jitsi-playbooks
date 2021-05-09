@@ -1,0 +1,45 @@
+# jitsi-meet coturn config. Do not modify this line
+use-auth-secret
+static-auth-secret={{ turncredentials_secret }}
+
+server-name={{ turnservername }}
+realm={{ turnservername }}
+
+cert=/etc/coturn/certs/{{ turnservername }}.fullchain.pem
+pkey=/etc/coturn/certs/{{ turnservername }}.privkey.pem
+cipher-list="EECDH+ECDSA+AESGCM:EECDH+aRSA+AESGCM:EECDH+ECDSA+SHA256:EECDH+aRSA+SHA256:EECDH+ECDSA+SHA384:EE$dh-file=/etc/ssl/dhparam4096.pem
+no-tlsv1
+no-tlsv1_1
+
+fingerprint
+
+# Flag that can be used to disallow peers on the loopback addresses (127.x.x.x and ::1).
+no-loopback-peers
+# Flag that can be used to disallow peers on well-known broadcast addresses (224.0.0.0 and above$no-multicas$no-multicast-peers
+
+no-tcp
+no-udp
+#listening-port=3478
+tls-listening-port=443
+listening-ip=0.0.0.0
+relay-ip={{ internal_interface }}
+
+total-quota=100
+bps-capacity=0
+stale-nonce=600
+
+log-file=/var/log/turnserver/turnserver.log
+#verbose
+simple-log
+no-stdout-log
+
+# Option to hide software version.
+prod
+# Turn OFF the CLI support.
+no-cli
+
+# User name to run the process.
+proc-user=turnserver
+
+# Group name to run the process.
+proc-group=turnserver
