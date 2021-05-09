@@ -23,7 +23,13 @@
 admins = {  }
 
 component_interface = "0.0.0.0"
+interfaces = {"127.0.0.1", "{{ internal_interface }}"}
 https_ports = { }
+
+network_settings = {
+	read_timeout = 300;
+	tcp_backlog = 511;
+}
 
 -- Enable use of libevent for better performance under high load
 -- For more information see: https://prosody.im/doc/libevent
@@ -33,9 +39,7 @@ use_libevent = true
 -- Prosody will always look in its source directory for modules, but
 -- this option allows you to specify additional locations where Prosody
 -- will look for modules first. For community modules, see https://modules.prosody.im/
---plugin_paths = { "/var/www/jitsi-meet/prosody-plugins", "/usr/lib/prosody/modules" }
-plugin_paths = { "/var/www/jitsi-meet/prosody-plugins", "/usr/lib/prosody/modules", "/usr/share/jitsi-meet/prosody-plugins" }
-
+plugin_paths = { "/var/www/jitsi-meet/prosody-plugins", "/usr/lib/prosody/modules" }
 
 -- This is the list of modules Prosody will load on startup.
 -- It looks for mod_modulename.lua in the plugins folder, so make sure that exists too.
@@ -69,6 +73,8 @@ modules_enabled = {
 	-- Admin interfaces
 		"admin_adhoc"; -- Allows administration via an XMPP client that supports ad-hoc commands
 		--"admin_telnet"; -- Opens telnet console interface on localhost port 5582
+		-- "reload_components";
+		-- "reload_modules";
 
 	-- HTTP modules
 		--"bosh"; -- Enable BOSH clients, aka "Jabber over HTTP"
@@ -86,6 +92,9 @@ modules_enabled = {
 		--"motd"; -- Send a message to users when they log in
 		--"legacyauth"; -- Legacy authentication. Only used by some old clients and bots.
 		--"proxy65"; -- Enables a file transfer proxy service which clients behind NAT can use
+
+		"smacks"; --XEP-0198: Stream Management
+
 }
 
 -- These modules are auto-loaded, but should you want
@@ -95,6 +104,11 @@ modules_disabled = {
 	-- "c2s"; -- Handle client connections
 	-- "s2s"; -- Handle server-to-server connections
 }
+
+smacks_max_unacked_stanzas = 5;
+smacks_hibernation_time = 60;
+smacks_max_hibernated_sessions = 1;
+smacks_max_old_sessions = 1;
 
 cross_domain_bosh = false;
 consider_bosh_secure = true;
@@ -109,7 +123,7 @@ allow_registration = false
 -- Debian:
 --   send the server to background.
 --
-daemonize = true;
+daemonize = false;
 
 -- Debian:
 --   Please, don't change this option since /var/run/prosody/
@@ -218,7 +232,7 @@ certificates = "certs"
 -- Settings under each VirtualHost entry apply *only* to that host.
 
 --VirtualHost "example.com"
---     certificate = "/path/to/example.crt"
+--	certificate = "/path/to/example.crt"
 
 ------ Components ------
 -- You can specify components to add hosts that provide special services,
@@ -237,7 +251,7 @@ certificates = "certs"
 -- see: https://prosody.im/doc/components#adding_an_external_component
 --
 --Component "gateway.example.com"
---     component_secret = "password"
+--	component_secret = "password"
 
 ------ Additional config files ------
 -- For organizational purposes you may prefer to add VirtualHost and
