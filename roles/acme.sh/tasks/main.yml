@@ -1,0 +1,11 @@
+---
+- name: install socat
+  apt:
+    name:
+      - socat
+
+- name: install acme.sh
+  shell: wget -O -  https://get.acme.sh | sh -s email={{ letsencrypt_email }}
+  args:
+    warn: false
+    creates: ~/.acme.sh/
