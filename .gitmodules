@@ -1,6 +1,8 @@
 [submodule "files/jitsi-www"]
 	path = files/jitsi-www
 	url = https://github.com/regional-digital/jitsi-www.git
+	branch = main
 [submodule "inventory"]
 	path = inventory
 	url = https://github.com/regional-digital/jitsi-inventory.git
+	branch = main
