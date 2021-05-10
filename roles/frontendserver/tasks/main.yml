@@ -402,12 +402,20 @@
     - /etc/prosody/conf.d/auth.{{ hostname }}.key
     - /etc/prosody/conf.d/{{ hostname }}.cfg.lua
 
-- name: register user jvb in prosody domain auth.{{ shardName }}
-  command: prosodyctl register jvb auth.{{ shardName }} {{ prosody_user_jvb_password }}
-  args: 
-    creates: /var/lib/prosody/auth%2e{{ shardNameShort }}%2ejitsi/accounts/jvb.dat
+- name: generate /var/lib/prosody/auth%2e{{ shardNameShort }}%2ejitsi/accounts/jvb.dat
+  template:
+    src: prosody/jvb.dat.j2
+    dest: /var/lib/prosody/auth%2e{{ shardNameShort }}%2ejitsi/accounts/jvb.dat
+    owner: prosody
+    group: prosody
+    mode: "0640"
+    backup: yes
 
-- name: register user focus in prosody domain auth.{{ shardName }}
-  command: prosodyctl register focus auth.{{ shardName }} {{ prosody_user_focus_password }}
-  args:
-    creates: /var/lib/prosody/auth%2e{{ shardNameShort }}%2ejitsi/accounts/focus.dat
+- name: generate /var/lib/prosody/auth%2e{{ shardNameShort }}%2ejitsi/accounts/focus.dat
+  template:
+    src: prosody/focus.dat.j2
+    dest: /var/lib/prosody/auth%2e{{ shardNameShort }}%2ejitsi/accounts/focus.dat
+    owner: prosody
+    group: prosody
+    mode: "0640"
+    backup: yes
