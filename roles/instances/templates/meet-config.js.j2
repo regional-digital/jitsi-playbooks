@@ -65,6 +65,12 @@ var config = {
 {% endif %}
     },
 
+{% if instanceVars.toolbarButtons is defined %}
+    toolbarButtons: [ 
+       {{ instanceVars.toolbarButtons }}
+    ],
+{% endif %}
+
 {% if instanceVars.dialInNumbers is defined %}
 dialInConfCodeUrl: 'https://{{ instance }}/conferenceMapper',
 dialInNumbersUrl: 'https://{{ instance }}/numbers.json',
