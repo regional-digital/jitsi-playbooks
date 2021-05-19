@@ -8,17 +8,22 @@
     url: https://prosody.im/files/prosody-debian-packages.key
     state: present
 
-- name: Install prosody repository
-  apt_repository:
-    repo: deb http://packages.prosody.im/debian focal main
-    state: present
-    filename: 99_prosody
-    update_cache: yes
+- name: Copy Prosody Package
+  ansible.builtin.copy:
+    src: files/{{ item }}
+    dest: "{{ item }}"
+    owner: root
+    group: root
+    mode: '0600'
+    backup: yes
+  with_items:
+    - prosody-0.11_1nightly131-1~focal_amd64.deb
 
-- name: install prosody
-  package:
-    name:
-      - prosody-0.11
+- name: Install Prosody Package
+  apt:
+    deb: "{{ item }}"
+  with_items:
+    - prosody-0.11_1nightly131-1~focal_amd64.deb
 
 - name: Set debconf-answers for jitsi-meet-web-config
   debconf:
@@ -56,7 +61,7 @@
     - jicofo_1.0-692-hf-1_all.deb
     - jitsi-meet-web_1.0.4900-1_all.deb
     - jitsi-meet-web-config_1.0.4900-1_all.deb
-    - jitsi-meet-prosody_1.0.4900-1_all.deb
+    - jitsi-meet-prosody_1.0.4985-1_all.deb
     - jitsi-meet-tokens_1.0.4900-1_all.deb
 
 - name: Install Jitsi Packages
@@ -66,7 +71,7 @@
     - jicofo_1.0-692-hf-1_all.deb
     - jitsi-meet-web_1.0.4900-1_all.deb
     - jitsi-meet-web-config_1.0.4900-1_all.deb
-    - jitsi-meet-prosody_1.0.4900-1_all.deb
+    - jitsi-meet-prosody_1.0.4985-1_all.deb
     - jitsi-meet-tokens_1.0.4900-1_all.deb
 
 - name: create /etc/systemd/system/prosody.service.d
@@ -308,11 +313,6 @@
   notify:
     - restart jicofo
 
-- name: delete default prosody file
-  ansible.builtin.file:
-    path: /etc/prosody/conf.d/{{ inventory_hostname }}.cfg.lua
-    state: absent
-
 - name: generate /etc/prosody/conf.d/{{ shardName }}.cfg.lua
   template:
     src: prosody/etc/prosody/conf.d/{{ shardName }}.cfg.lua.j2
@@ -391,16 +391,17 @@
   notify:
     - restart prosody
 
-- name: Remove default prosody stuff
-  file:
-    name: "{{ item }}"
-    state: absent
-  with_items:
-    - /etc/prosody/conf.d/{{ hostname }}.crt
-    - /etc/prosody/conf.d/{{ hostname }}.key
-    - /etc/prosody/conf.d/auth.{{ hostname }}.crt
-    - /etc/prosody/conf.d/auth.{{ hostname }}.key
-    - /etc/prosody/conf.d/{{ hostname }}.cfg.lua
+#removing this stuff breaks updates of jitsi-meet-prosody
+#- name: Remove default prosody stuff
+#  file:
+#    name: "{{ item }}"
+#    state: absent
+#  with_items:
+#    - /etc/prosody/conf.d/{{ hostname }}.crt
+#    - /etc/prosody/conf.d/{{ hostname }}.key
+#    - /etc/prosody/conf.d/auth.{{ hostname }}.crt
+#    - /etc/prosody/conf.d/auth.{{ hostname }}.key
+#    - /etc/prosody/conf.d/{{ hostname }}.cfg.lua
 
 - name: generate /var/lib/prosody/auth%2e{{ shardNameShort }}%2ejitsi/accounts/jvb.dat
   template:
