@@ -15,3 +15,11 @@
   apt_key:
     url: https://download.jitsi.org/jitsi-key.gpg.key 
     state: present
+
+- name: create folder for packages
+  file:
+    path: /opt/jitispackages
+    state: directory
+    owner: root
+    group: root
+    mode: '0600'
