@@ -36,6 +36,9 @@ var config = {
 {% if enableFeaturesBasedOnToken is defined and enableFeaturesBasedOnToken == True %}
     enableFeaturesBasedOnToken: true,
 {% endif %}
+{% if instanceVars.tokenAuthUrl is defined %}
+   tokenAuthUrl: '{{ instanceVars.tokenAuthUrl }}',
+{% endif %}
 {% if disableInviteFunctions is defined and disableInviteFunctions == True %}
     disableInviteFunctions: true,
 {% endif %}
