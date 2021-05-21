@@ -11,7 +11,7 @@
 - name: Copy Prosody Package
   ansible.builtin.copy:
     src: files/{{ item }}
-    dest: "{{ item }}"
+    dest: "/opt/jitispackages/{{ item }}"
     owner: root
     group: root
     mode: '0600'
@@ -21,7 +21,7 @@
 
 - name: Install Prosody Package
   apt:
-    deb: "{{ item }}"
+    deb: "/opt/jitispackages/{{ item }}"
   with_items:
     - prosody-0.11_1nightly131-1~focal_amd64.deb
 
@@ -391,18 +391,6 @@
   notify:
     - restart prosody
 
-#removing this stuff breaks updates of jitsi-meet-prosody
-#- name: Remove default prosody stuff
-#  file:
-#    name: "{{ item }}"
-#    state: absent
-#  with_items:
-#    - /etc/prosody/conf.d/{{ hostname }}.crt
-#    - /etc/prosody/conf.d/{{ hostname }}.key
-#    - /etc/prosody/conf.d/auth.{{ hostname }}.crt
-#    - /etc/prosody/conf.d/auth.{{ hostname }}.key
-#    - /etc/prosody/conf.d/{{ hostname }}.cfg.lua
-
 - name: generate /var/lib/prosody/auth%2e{{ shardNameShort }}%2ejitsi/accounts/jvb.dat
   template:
     src: prosody/jvb.dat.j2
@@ -416,6 +404,15 @@
   template:
     src: prosody/focus.dat.j2
     dest: /var/lib/prosody/auth%2e{{ shardNameShort }}%2ejitsi/accounts/focus.dat
+    owner: prosody
+    group: prosody
+    mode: "0640"
+    backup: yes
+
+- name: generate /var/lib/prosody/auth%2e{{ shardNameShort }}%2ejitsi/accounts/jigasi.dat
+  template:
+    src: prosody/jigasi.dat.j2
+    dest: /var/lib/prosody/auth%2e{{ shardNameShort }}%2ejitsi/accounts/jigasi.dat
     owner: prosody
     group: prosody
     mode: "0640"
