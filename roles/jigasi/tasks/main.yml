@@ -1,0 +1,88 @@
+---
+- name: Copy Jigasi Package to host
+  ansible.builtin.copy:
+    src: files/{{ item }}
+    dest: "/opt/jitispackages/{{ item }}"
+    owner: root
+    group: root
+    mode: '0600'
+    backup: yes
+  with_items:
+    - jigasi_1.1-178-g3c53cf6-1_amd64.deb
+
+- name: Install Jigasi Packages
+  apt:
+    deb: "/opt/jitispackages/{{ item }}"
+  with_items:
+    - jigasi_1.1-178-g3c53cf6-1_amd64.deb
+
+- name: install asterisk
+  apt:
+    name:
+      - asterisk
+
+- name: generate /etc/jitsi/jigasi/config
+  template:
+    src: config.j2
+    dest: /etc/jitsi/jigasi/config
+    owner: jigasi
+    group: jitsi
+    mode: "0644"
+    backup: yes
+  notify:
+    - restart jigasi
+
+- name: generate /etc/jitsi/jigasi/log4j2.xml
+  template:
+    src: log4j2.xml.j2
+    dest: /etc/jitsi/jigasi/log4j2.xml
+    owner: jigasi
+    group: jitsi
+    mode: "0644"
+    backup: yes
+  notify:
+    - restart jigasi
+
+- name: generate /etc/jitsi/jigasi/logging.properties
+  template:
+    src: logging.properties.j2
+    dest: /etc/jitsi/jigasi/logging.properties
+    owner: jigasi
+    group: jitsi
+    mode: "0644"
+    backup: yes
+  notify:
+    - restart jigasi
+
+- name: generate /etc/jitsi/jigasi/sip-communicator.properties
+  template:
+    src: sip-communicator.properties.j2
+    dest: /etc/jitsi/jigasi/sip-communicator.properties
+    owner: jigasi
+    group: jitsi
+    mode: "0600"
+    backup: yes
+  notify:
+    - restart jigasi
+
+- name: generate /etc/asterisk/sip.conf
+  template:
+    src: asterisk/sip.conf.j2
+    dest: /etc/asterisk/sip.conf
+    owner: asterisk
+    group: asterisk
+    mode: "0600"
+    backup: yes
+  notify:
+    - restart asterisk
+
+- name: generate /etc/asterisk/extensions.conf
+  template:
+    src: asterisk/extensions.conf.j2
+    dest: /etc/asterisk/extensions.conf
+    owner: asterisk
+    group: asterisk
+    mode: "0600"
+    backup: yes
+  notify:
+    - restart asterisk

@@ -1,0 +1,9 @@
+---
+- name: restart asterisk
+  service: 
+    name: asterisk
+    state: restarted
+- name: restart jigasi
+  service: 
+    name: jigasi
+    state: restarted

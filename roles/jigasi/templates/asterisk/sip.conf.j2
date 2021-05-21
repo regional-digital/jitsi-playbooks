@@ -1,0 +1,44 @@
+[general]
+port=5060
+bindaddr=0.0.0.0
+language=de
+deny=0.0.0.0/0.0.0.0
+permit={{ external_ip }}/255.255.255.255
+allowguest=no
+
+{% for sip_account in sip_accounts %}
+register => {{ sip_accounts[sip_account].number }}:{{ sip_accounts[sip_account].secret }}@{{ sip_provider_domain }}/{{ sip_accounts[sip_account].number }}
+{% endfor %}
+
+{% for sip_account in sip_accounts %}
+[ext-sip-account-{{ sip_accounts[sip_account].name }}]
+type=friend
+context=von-voip-provider
+username={{ sip_accounts[sip_account].number }}
+fromuser={{ sip_accounts[sip_account].number }}
+secret={{ sip_accounts[sip_account].secret }}
+host={{ sip_provider_domain }}
+fromdomain={{ sip_provider_domain }}
+qualify=yes
+insecure=invite
+disallow=all
+dtmfmode=auto
+allow=g722
+allow=ulaw
+allow=alaw
+allow=gsm
+allow=g726
+
+{% endfor %}
+
+[{{ jigasi_user_id }}]
+type=friend
+context=meine-telefone
+secret={{ jigasi_user_pw }}
+host=dynamic
+disallow=all
+allow=g722
+allow=ulaw
+allow=alaw
+allow=gsm
+allow=g726

@@ -1,0 +1,187 @@
+#Sample config with one XMPP and one SIP account configured
+# Replace {sip-pass-hash} with SIP user password hash
+# as well as other account properties
+
+# Name of default JVB room that will be joined if no special header is included
+# in SIP invite
+org.jitsi.jigasi.DEFAULT_JVB_ROOM_NAME=siptest@conference.{{ jigasi_hostname }}
+net.java.sip.communicator.impl.protocol.SingleCallInProgressPolicy.enabled=false
+
+# Should be enabled when using translator mode
+#net.java.sip.communicator.impl.neomedia.audioSystem.audiosilence.captureDevice_list=["AudioSilenceCaptureDevice:noTransferData"]
+
+# Adjust opus encoder complexity
+net.java.sip.communicator.impl.neomedia.codec.audio.opus.encoder.COMPLEXITY=10
+
+# Disables packet logging
+net.java.sip.communicator.packetlogging.PACKET_LOGGING_ENABLED=false
+
+net.java.sip.communicator.impl.protocol.sip.acc1=acc1
+net.java.sip.communicator.impl.protocol.sip.acc1.ACCOUNT_UID={{ jigasi_account_uid }}
+net.java.sip.communicator.impl.protocol.sip.acc1.PASSWORD={{ jigasi_sippwd }}
+net.java.sip.communicator.impl.protocol.sip.acc1.PROTOCOL_NAME=SIP
+net.java.sip.communicator.impl.protocol.sip.acc1.SERVER_ADDRESS={{ jigasi_server_address }}
+net.java.sip.communicator.impl.protocol.sip.acc1.PREFERRED_TRANSPORT=udp
+net.java.sip.communicator.impl.protocol.sip.acc1.USER_ID={{ jigasi_user_id }}
+net.java.sip.communicator.impl.protocol.sip.acc1.KEEP_ALIVE_INTERVAL=25
+
+net.java.sip.communicator.impl.protocol.sip.acc1.KEEP_ALIVE_METHOD=XEP-0199
+net.java.sip.communicator.impl.protocol.sip.acc1.KEEP_ALIVE_INTERVAL=30
+
+net.java.sip.communicator.impl.protocol.sip.acc1.VOICEMAIL_ENABLED=false
+net.java.sip.communicator.impl.protocol.sip.acc1.Encodings.AMR-WB/16000=750
+net.java.sip.communicator.impl.protocol.sip.acc1.Encodings.G722/8000=700
+net.java.sip.communicator.impl.protocol.sip.acc1.Encodings.GSM/8000=0
+net.java.sip.communicator.impl.protocol.sip.acc1.Encodings.H263-1998/90000=0
+net.java.sip.communicator.impl.protocol.sip.acc1.Encodings.H264/90000=0
+net.java.sip.communicator.impl.protocol.sip.acc1.Encodings.PCMA/8000=600
+net.java.sip.communicator.impl.protocol.sip.acc1.Encodings.PCMU/8000=650
+net.java.sip.communicator.impl.protocol.sip.acc1.Encodings.SILK/12000=0
+net.java.sip.communicator.impl.protocol.sip.acc1.Encodings.SILK/16000=0
+net.java.sip.communicator.impl.protocol.sip.acc1.Encodings.SILK/24000=0
+net.java.sip.communicator.impl.protocol.sip.acc1.Encodings.SILK/8000=0
+net.java.sip.communicator.impl.protocol.sip.acc1.Encodings.VP8/90000=0
+net.java.sip.communicator.impl.protocol.sip.acc1.Encodings.iLBC/8000=10
+net.java.sip.communicator.impl.protocol.sip.acc1.Encodings.opus/48000=1000
+net.java.sip.communicator.impl.protocol.sip.acc1.Encodings.red/90000=0
+net.java.sip.communicator.impl.protocol.sip.acc1.Encodings.speex/16000=0
+net.java.sip.communicator.impl.protocol.sip.acc1.Encodings.speex/32000=0
+net.java.sip.communicator.impl.protocol.sip.acc1.Encodings.speex/8000=0
+net.java.sip.communicator.impl.protocol.sip.acc1.Encodings.telephone-event/8000=1
+net.java.sip.communicator.impl.protocol.sip.acc1.Encodings.ulpfec/90000=0
+net.java.sip.communicator.impl.protocol.sip.acc1.OVERRIDE_ENCODINGS=true
+net.java.sip.communicator.impl.protocol.sip.acc1.DEFAULT_ENCRYPTION=false
+
+# Reconnect acc1 if connection is lost
+# see https://community.jitsi.org/t/jigasi-sip-registration-retry/15687/13
+net.java.sip.communicator.plugin.reconnectplugin.ATLEAST_ONE_SUCCESSFUL_CONNECTION.acc1=true
+
+net.java.sip.communicator.impl.protocol.sip.SKIP_REINVITE_ON_FOCUS_CHANGE_PROP=true
+
+# If an authenticated (hidden) domain is used to connect to a conference,
+# PREVENT_AUTH_LOGIN will prevent the SIP participant from being seen as a
+# hidden participant in the conference
+#net.java.sip.communicator.impl.protocol.sip.acc1.PREVENT_AUTH_LOGIN=false
+
+# Used when incoming calls are used in multidomain environment, used to detect subdomains
+# used for constructing callResource and eventually contacting jicofo
+net.java.sip.communicator.impl.protocol.sip.acc1.DOMAIN_BASE={{ jigasi_hostname }}
+
+# the pattern to be used as bosh url when using bosh in multidomain environment
+net.java.sip.communicator.impl.protocol.sip.acc1.BOSH_URL_PATTERN=https://{{ frontenddnsname }}/http-bind?room={roomName}
+
+# can be enabled to disable audio mixing and use translator, jigasi will act as jvb, just forward every ssrc stream it receives.
+#net.java.sip.communicator.impl.protocol.sip.acc1.USE_TRANSLATOR_IN_CONFERENCE=true
+
+# We can use the prefix org.jitsi.jigasi.xmpp.acc to override any of the
+# properties that will be used for creating xmpp account for communication.
+
+# The following two props assume we are using jigasi on the same machine as
+# the xmpp server.
+org.jitsi.jigasi.xmpp.acc.IS_SERVER_OVERRIDDEN=true
+#org.jitsi.jigasi.xmpp.acc.SERVER_ADDRESS=127.0.0.1
+org.jitsi.jigasi.xmpp.acc.VIDEO_CALLING_DISABLED=true
+org.jitsi.jigasi.xmpp.acc.JINGLE_NODES_ENABLED=false
+org.jitsi.jigasi.xmpp.acc.AUTO_DISCOVER_STUN=false
+org.jitsi.jigasi.xmpp.acc.IM_DISABLED=true
+org.jitsi.jigasi.xmpp.acc.SERVER_STORED_INFO_DISABLED=true
+org.jitsi.jigasi.xmpp.acc.IS_FILE_TRANSFER_DISABLED=true
+org.jitsi.jigasi.xmpp.acc.KEEP_ALIVE_METHOD=XEP-0199
+org.jitsi.jigasi.xmpp.acc.KEEP_ALIVE_INTERVAL=30
+# Or you can use bosh for the connection establishment by specifing the URL to use.
+org.jitsi.jigasi.xmpp.acc.BOSH_URL_PATTERN=https://{{ frontenddnsname }}/http-bind?room={roomName}
+org.jitsi.jigasi.xmpp.acc.ALLOW_NON_SECURE=true
+org.jitsi.jigasi.MUC_SERVICE_ADDRESS=conference.{{ jigasi_hostname }}
+
+#Used when outgoing calls are used in multidomain environment, used to detect subdomains
+#org.jitsi.jigasi.xmpp.acc.DOMAIN_BASE={{ jigasi_hostname }}
+#org.jitsi.jigasi.xmpp.acc.BOSH_URL_PATTERN=https://{{ frontenddnsname }}/http-bind?room={roomName}
+
+# can be enabled to disable audio mixing and use translator, jigasi will act as jvb, just forward every ssrc stream it receives.
+#org.jitsi.jigasi.xmpp.acc.USE_TRANSLATOR_IN_CONFERENCE=true
+
+# If you want jigasi to perform authenticated login instead of anonymous login
+# to the XMPP server, you can set the following properties.
+org.jitsi.jigasi.xmpp.acc.USER_ID=jigasi@auth.{{ jigasi_hostname }}
+org.jitsi.jigasi.xmpp.acc.PASS={{ prosody_user_jigasi_password }}
+org.jitsi.jigasi.xmpp.acc.ANONYMOUS_AUTH=false
+
+# If you want to use the SIP user part of the incoming/outgoing call SIP URI
+# you can set the following property to true.
+# org.jitsi.jigasi.USE_SIP_USER_AS_XMPP_RESOURCE=true
+
+# Activate this property if you are using self-signed certificates or other
+# type of non-trusted certicates. In this mode your service trust in the
+# remote certificates always.
+net.java.sip.communicator.service.gui.ALWAYS_TRUST_MODE_ENABLED=true
+
+# Enable this property to be able to shutdown gracefully jigasi using
+# a rest command
+# org.jitsi.jigasi.ENABLE_REST_SHUTDOWN=true
+
+# Options regarding Transcription. Read the README for a detailed description
+# about each property
+
+#org.jitsi.jigasi.ENABLE_TRANSCRIPTION=false
+#org.jitsi.jigasi.ENABLE_SIP=true
+
+# whether to use the more expensive, but better performing
+# "video" model when doing transcription
+# org.jitsi.jigasi.transcription.USE_VIDEO_MODEL = false
+
+# delivering final transcript
+# org.jitsi.jigasi.transcription.DIRECTORY=/var/lib/jigasi/transcripts
+# org.jitsi.jigasi.transcription.BASE_URL=http://localhost/
+# org.jitsi.jigasi.transcription.jetty.port=-1
+# org.jitsi.jigasi.transcription.ADVERTISE_URL=false
+
+# save formats
+# org.jitsi.jigasi.transcription.SAVE_JSON=false
+# org.jitsi.jigasi.transcription.SAVE_TXT=true
+
+# send formats
+# org.jitsi.jigasi.transcription.SEND_JSON=true
+# org.jitsi.jigasi.transcription.SEND_TXT=false
+
+# Vosk server
+# org.jitsi.jigasi.transcription.customService=org.jitsi.jigasi.transcription.VoskTranscriptionService
+# org.jitsi.jigasi.transcription.vosk.websocket_url=ws://localhost:2700
+
+# translation
+# org.jitsi.jigasi.transcription.ENABLE_TRANSLATION=false
+
+# record audio. Currently only wav format is supported
+# org.jitsi.jigasi.transcription.RECORD_AUDIO=false
+# org.jitsi.jigasi.transcription.RECORD_AUDIO_FORMAT=wav
+
+# execute one or more scripts when a transcript or recording is saved
+# org.jitsi.jigasi.transcription.EXECUTE_SCRIPTS=true
+# org.jitsi.jigasi.transcription.SCRIPTS_TO_EXECUTE_LIST_SEPARATOR=","
+# org.jitsi.jigasi.transcription.SCRIPTS_TO_EXECUTE_LIST=script/example_handle_transcript_directory.sh
+
+# filter out silent audio
+#org.jitsi.jigasi.transcription.FILTER_SILENCE = false
+
+# properties for optionally sending statistics to a DataDog server
+#org.jitsi.ddclient.prefix=jitsi.jigasi
+#org.jitsi.ddclient.host=localhost
+#org.jitsi.ddclient.port=8125
+
+# sip health checking
+# Enables sip health checking by specifying a number/uri to call
+# the target just needs to auto-connect the call play some audio,
+# the call must be established for less than 10 seconds
+#org.jitsi.jigasi.HEALTH_CHECK_SIP_URI={{ jigasi_healthcheck_number }}
+#
+# The interval between healthcheck calls, by default is 5 minutes
+#org.jitsi.jigasi.HEALTH_CHECK_INTERVAL=300000
+#
+# The timeout of healthcheck, if there was no successful health check for
+# 10 minutes (default value) we consider jigasi unhealthy
+#org.jitsi.jigasi.HEALTH_CHECK_TIMEOUT=600000
+
+# Enabled or disable the notification when max occupants limit is reached
+# org.jitsi.jigasi.NOTIFY_MAX_OCCUPANTS=false
+
+org.jitsi.jigasi.rest.jetty.port=9001
+org.jitsi.jigasi.rest.jetty.host=0.0.0.0
