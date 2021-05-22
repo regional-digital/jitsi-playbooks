@@ -8,7 +8,7 @@
     usedWebVersion: "jitsi-meet-{{ instanceVars.usedWebVersion }}"
   when: instanceVars.usedWebVersion is defined
 
-- name: copy/update wwwroot-template for instance {{ instance }}
+- name: copy/update wwwroot-template for instance {{ instance }} from {{ usedWebVersion}}
   ansible.builtin.copy:
     src: "files/jitsi-www/base/{{ usedWebVersion}}/"
     dest: /var/www/jitsi-meet-{{ instance }}
