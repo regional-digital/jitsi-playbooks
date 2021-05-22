@@ -3,7 +3,7 @@ var config = {
         domain: '{{ shardName }}',
         authdomain: '{{ shardName }}',
         focus: 'focus.{{ shardName }}',
-        muc: 'conference.<!--# echo var="subdomain" default="" -->{{ shardName }}'
+        muc: 'conference.{{ shardName }}'
     },
     bosh: '//<!--# echo var="http_host" -->/<!--# echo var="subdir" default="" -->http-bind',
     websocket: 'wss://{{ instance }}/xmpp-websocket',
