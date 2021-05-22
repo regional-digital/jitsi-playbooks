@@ -155,8 +155,8 @@
 
 - name: if not generate meet-config file for instance {{ instance }} from template
   template:
-    src: meet-config.js.j2
-    dest: /etc/jitsi/meet/{{ instance }}-config{{ usedWebVersion }}.js
+    src: meet-config{{ usedWebVersion }}.js.j2
+    dest: /etc/jitsi/meet/{{ instance }}-config.js
     owner: www-data
     group: www-data
     mode: '0775'
