@@ -66,13 +66,6 @@
   notify:
     - reload nginx
 
-
-
-
-
-
-
-
 - name: check if certificate of instance {{ instance }} exists in letsencrypt folder
   stat: 
     path: /etc/letsencrypt/live/{{ instance }}/fullchain.pem
@@ -150,10 +143,20 @@
     backup: yes
   when: meetConfigCheck.stat.exists == True
 
+- name: set usedWebVersion to match path
+  set_fact:
+    usedWebVersion: "-{{ instanceVars.usedWebVersion }}"
+  when: instanceVars.usedWebVersion is defined
+
+- name: set usedWebVersion to match path
+  set_fact:
+    usedWebVersion: ""
+  when: instanceVars.usedWebVersion is not defined
+
 - name: if not generate meet-config file for instance {{ instance }} from template
   template:
     src: meet-config.js.j2
-    dest: /etc/jitsi/meet/{{ instance }}-config.js
+    dest: /etc/jitsi/meet/{{ instance }}-config{{ usedWebVersion }}.js
     owner: www-data
     group: www-data
     mode: '0775'
