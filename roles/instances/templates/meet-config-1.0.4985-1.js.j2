@@ -201,7 +201,7 @@ var config = {
     //     // by default uses:
     //     // 'https://{{ instance }}/static/oauth.html'
     //     redirectURI:
-    //          'https://{{{ instance }}/subfolder/static/oauth.html'
+    //          'https://{{ instance }}/subfolder/static/oauth.html'
     // },
     // When integrations like dropbox are enabled only that will be shown,
     // by enabling fileRecordingsServiceEnabled, we show both the integrations
@@ -400,7 +400,7 @@ var config = {
     // Whether or not some features are checked based on token.
 {% if enableFeaturesBasedOnToken is defined and enableFeaturesBasedOnToken == True %}
     enableFeaturesBasedOnToken: true,
-{% else %}
+    {% else %}
     enableFeaturesBasedOnToken: false,
 {% endif %}
 {% if instanceVars.tokenAuthUrl is defined %}
@@ -459,11 +459,17 @@ var config = {
     //    'videoquality', 'filmstrip', 'invite', 'feedback', 'stats', 'shortcuts',
     //    'tileview', 'select-background', 'download', 'help', 'mute-everyone', 'mute-video-everyone', 'security'
     // ],
-{% if instanceVars.toolbarButtons is defined %}
     toolbarButtons: [ 
+{% if instanceVars.toolbarButtons is defined %}
        {{ instanceVars.toolbarButtons }}
-    ],
+{% else %}
+      'microphone', 'camera', 'closedcaptions', 'desktop', 'embedmeeting', 'fullscreen',
+      'fodeviceselection', 'hangup', 'profile', 'chat', /*'recording',*/
+      /*'livestreaming',*/ 'etherpad',  /*'sharedvideo',*/ 'shareaudio', 'settings', 'raisehand',
+      'videoquality', 'filmstrip', 'invite', 'feedback', 'stats', 'shortcuts',
+      'tileview', 'select-background', /*'download',*/ 'help', 'mute-everyone', 'mute-video-everyone', 'security'
 {% endif %}
+    ],
 
     // Stats
     //
