@@ -16,7 +16,7 @@
 - name: Copy Jitsi Package to host
   ansible.builtin.copy:
     src: files/{{ item }}
-    dest: /tmp/{{ item }}
+    dest: "/opt/jitispackages/{{ item }}"
     owner: root
     group: root
     mode: '0600'
@@ -26,7 +26,7 @@
 
 - name: Install Jitsi Packages
   apt:
-    deb: /tmp/{{ item }}
+    deb: "/opt/jitispackages/{{ item }}"
   with_items:
     - jitsi-videobridge2_2.1-508-gb24f756c-1_all.deb
 

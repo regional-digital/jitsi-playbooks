@@ -52,7 +52,7 @@
 - name: Copy Jitsi Package to host
   ansible.builtin.copy:
     src: files/{{ item }}
-    dest: "{{ item }}"
+    dest: "/opt/jitispackages/{{ item }}"
     owner: root
     group: root
     mode: '0600'
@@ -66,7 +66,7 @@
 
 - name: Install Jitsi Packages
   apt:
-    deb: "{{ item }}"
+    deb: "/opt/jitispackages/{{ item }}"
   with_items:
     - jicofo_1.0-692-hf-1_all.deb
     - jitsi-meet-web_1.0.5056-1_all.deb
