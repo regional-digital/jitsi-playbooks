@@ -11,7 +11,7 @@
 - name: copy/update wwwroot-template for instance {{ instance }} from {{ usedWebVersion}}
   ansible.builtin.copy:
     src: "files/jitsi-www/base/{{ usedWebVersion}}/"
-    dest: /var/www/jitsi-meet-{{ instance }}
+    dest: /var/www/jitsi-meet-{{ deployto | default(instance) }}
     local_follow: False
     owner: www-data
     group: www-data
@@ -21,7 +21,7 @@
 - name: copy wwwroot of instance {{ instance }}
   ansible.builtin.copy:
     src: files/jitsi-www/instances/{{ instance }}/wwwroot/
-    dest: /var/www/jitsi-meet-{{ instance }}
+    dest: /var/www/jitsi-meet-{{ deployto | default(instance) }}
     local_follow: False
     owner: www-data
     group: www-data
