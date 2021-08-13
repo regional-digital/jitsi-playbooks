@@ -1,7 +1,19 @@
-- name: install nagios agent
+- name: copy package(s) to host
+  copy:
+    src: files/{{ item }}
+    dest: "/opt/ansiblepackages/{{ item }}"
+    owner: root
+    group: root
+    mode: '0600'
+    backup: yes
+  with_items:
+    - check-mk-agent_2.0.0b3-1_all.deb
+
+- name: install package(s) on host
   apt:
-    deb: https://stats.buehl.digital/nagios/check_mk/agents/check-mk-agent_2.0.0b3-1_all.deb
-  when: "'nagios_agent' in group_names"
+    deb: "/opt/ansiblepackages/{{ item }}"
+  with_items:
+    - check-mk-agent_2.0.0b3-1_all.deb
 
 - name: /etc/check_mk/fileinfo.cfg
   template:
@@ -17,4 +29,11 @@
     path: /home/gabriel/.ssh/authorized_keys
     line: command="sudo /usr/bin/check_mk_agent" ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDC9tuj4SMG7FxTg/+b4NvZJC4t8C6qRFwMgIpFt5ZGkz0pVYIT1JGR8nVKHLnQpiwDSS5xGCWoXUBXWeot2oLu0xfU9lnYP8BFtYAEkRcKkZRqfKdQrEIjHbRlGFcrzG0SVC0OH6vsa7s7b3wdToTuk7hKNovRYavL5+P1pTm9m2ixIWFDrVeBSeKWKGG2mHkzsSmheGDHogFYbuL+ZoD9kDxqKtnIiBMM4E8+QP2aR5PiY63vbJRtjGOlWLNnI72Rbb+RfvF5zLCZrsLAnydmrfWul1CtrTf0pBEEOzBe1HDEwEGPXaNxLoJO/4dLpp2XZ9SnsIjSX78kkH48+r/Gj70xCvrF1SNoOsXKi1JC18OlsSkcEgyaFoexjQ0BPKvvCxwJzx15EGfVQG0Wlw4edxC+T/tnDGwzhFuVWT1BaSXbz2UYdLIGTPM2dWH8lqCDXdT0THnJAtEVJ3Xnsg0pfrei4bKv17lZWP8+Q8aSlWFwuESKE9Zr1SVgWzYUpKM= nagios@stats.buehl.digital
     backup: yes
+  when: "'nagios_agent' in group_names"
+
+- name: disable check_mk-agent
+  systemd:
+    name: check_mk.socket
+    state: stopped
+    enabled: no
   when: "'nagios_agent' in group_names"
