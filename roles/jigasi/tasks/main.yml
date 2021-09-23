@@ -8,13 +8,13 @@
     mode: '0600'
     backup: yes
   with_items:
-    - jigasi_1.1-178-g3c53cf6-1_amd64.deb
+    - jigasi_1.1-195-g65ef768-1_amd64.deb
 
 - name: Install Jigasi Packages
   apt:
     deb: "/opt/jitispackages/{{ item }}"
   with_items:
-    - jigasi_1.1-178-g3c53cf6-1_amd64.deb
+    - jigasi_1.1-195-g65ef768-1_amd64.deb
 
 - name: install asterisk
   apt:

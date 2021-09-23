@@ -1,0 +1,46 @@
+---
+- name: create user for rsnapshot
+  command: adduser --gecos "" --disabled-password rsnapshot
+  args:
+    creates: /home/rsnapshot
+
+- name: adding existing users to groups sudo and adm
+  user:
+    name: rsnapshot
+    groups: sudo
+    append: yes
+
+- name: "Allow sudo users to sudo without a password"
+  lineinfile:
+    dest: "/etc/sudoers"
+    state: "present"
+    regexp: "^%sudo"
+    line: "%sudo ALL=(ALL) NOPASSWD:ALL"
+    validate: '/usr/sbin/visudo -cf %s'
+    backup: yes
+
+- name: create .ssh-folder
+  file:
+    path: /home/rsnapshot/.ssh
+    state: directory
+    owner: rsnapshot
+    group: rsnapshot
+    mode: '0600'
+
+- name: create authorized_keys-file
+  command: touch /home/rsnapshot/.ssh/authorized_keys
+  args:
+    creates: /home/rsnapshot/.ssh/authorized_keys
+
+- name: chown /home/rsnapshot/.ssh/authorized_keys
+  file:
+    path: /home/rsnapshot/.ssh/authorized_keys
+    owner: rsnapshot
+    group: rsnapshot
+    mode: '0600'
+
+- name: add pubkey to authorized_keys of rsnapshot user
+  lineinfile:
+    dest: "/home/rsnapshot/.ssh/authorized_keys"
+    line: "{{ rsnapshot_user_public_key }}"
+

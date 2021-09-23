@@ -10,3 +10,8 @@
     - cronapt
     - telegraf
     - nagios_agent
+
+- hosts: rsnapshot_client
+  gather_facts: true
+  roles:
+    - rsnapshot_client
