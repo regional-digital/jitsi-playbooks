@@ -1,0 +1,39 @@
+---
+- hosts: all
+  gather_facts: false
+  roles:
+    - common_ssh
+- hosts: all
+  gather_facts: true
+  roles:
+    - common
+    - cronapt
+#    - telegraf
+#    - nagios_agent
+
+#- hosts: rsnapshot_client
+#  gather_facts: true
+#  roles:
+#    - rsnapshot_client
+
+- hosts: shardOpenJitsi:shardClosedJitsi
+  roles:
+    - jitsicommon
+    - frontendserver
+
+- hosts: jitsisignal
+  roles:
+    - instances
+
+- hosts: jitsisignal
+  roles:
+    - instances-wwwroot
+
+- hosts: jitsivideobride
+  roles:
+    - jitsicommon
+    - videobridge
+
+- hosts: turnserver
+  roles:
+    - turnserver

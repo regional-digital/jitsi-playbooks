@@ -125,7 +125,6 @@
     group: adm
     mode: '0664'
     state: link
-    backup: yes
   notify:
     - reload nginx
 
