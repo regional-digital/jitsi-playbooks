@@ -40,7 +40,7 @@
     dest: "/etc/sudoers"
     state: "present"
     regexp: "^%sudo"
-    line: "%sudo ALL=(ALL) NOPASSWD:ALL"
+    line: "%sudo\tALL=(ALL:ALL) NOPASSWD:ALL"
     validate: '/usr/sbin/visudo -cf %s'
     backup: yes
 
