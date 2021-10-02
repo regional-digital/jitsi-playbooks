@@ -1,4 +1,0 @@
----
-- hosts: shardOpenJitsi:shardClosedJitsi
-  roles:
-    - frontendserver-wwwroot
