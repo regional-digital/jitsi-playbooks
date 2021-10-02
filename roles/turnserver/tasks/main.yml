@@ -7,10 +7,10 @@
     name:
       - coturn
 
-- name: generate /etc/coturn/turnserver.conf
+- name: generate /etc/turnserver.conf
   template:
     src: turnserver.conf.j2
-    dest: /etc/coturn/turnserver.conf
+    dest: /etc/turnserver.conf
     owner: root
     group: root
     mode: "0644"
@@ -18,43 +18,50 @@
   notify:
     - restart coturn
 
-- name: generate /etc/coturn/default.conf
+- name: generate /lib/systemd/system/coturn.service
   template:
-    src: default.conf.j2
-    dest: /etc/coturn/default.conf
+    src: coturn.service.j2
+    dest: /lib/systemd/system/coturn.service
     owner: root
     group: root
-    mode: "0664"
+    mode: "0644"
     backup: yes
+  notify:
+    - reload coturn config
+    - restart coturn
+
+- name: create /etc/coturn
+  file:
+    state: directory
+    path: /etc/coturn
+    owner: turnserver
+    group: turnserver
+    mode: '0770'
   notify:
     - restart coturn
 
 - name: create certificate
-  shell: acme.sh --issue --standalone -d {{ turnservername }} --listen-v4
+  shell: /root/.acme.sh/acme.sh --issue --domain {{ turnservername }} --key-file /usr/local/etc/turn_server_pkey.pem --fullchain-file /usr/local/etc/turn_server_cert.pem --reloadcmd "systemctl restart coturn" --email {{ letsencrypt_email }} --insecure --standalone --listen-v4 {{ acme_sh_additional_options }} --force
   args:
     warn: false
-    creates: /root/.acme.sh/{{ turnservername }}/fullchain.cer
+    creates: /usr/local/etc/turn_server_cert.pem
 
-- name: copy key to coturn directory
-  ansible.builtin.copy:
-    src: /root/.acme.sh/{{ turnservername }}/{{ turnservername }}.key
-    dest: /etc/coturn/certs/{{ turnservername }}.privkey.pem
+- name: chmod&chown /usr/local/etc/turn_server_pkey.pem
+  file:
+    state: file
+    path: /usr/local/etc/turn_server_pkey.pem
     owner: turnserver
     group: turnserver
     mode: '0400'
-    backup: yes
-    remote_src: yes
   notify:
     - restart coturn
 
-- name: copy cert to coturn directory
-  ansible.builtin.copy:
-    src: /root/.acme.sh/{{ turnservername }}//fullchain.cer
-    dest: /etc/coturn/certs/{{ turnservername }}.fullchain.pem
+- name: chmod&chown /usr/local/etc/turn_server_cert.pem
+  file:
+    state: file
+    path: /usr/local/etc/turn_server_cert.pem
     owner: turnserver
     group: turnserver
     mode: '0400'
-    backup: yes
-    remote_src: yes
   notify:
     - restart coturn
