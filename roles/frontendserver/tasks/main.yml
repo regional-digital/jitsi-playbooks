@@ -3,6 +3,21 @@
   debug:
     msg: This role will not deploy wwwroot-content any more. use role frontendserver-wwwroot instead but it will terribly fail if you don't run this role before
 
+- name: install stuff
+  apt:
+    name:
+      - nginx
+      - libpcre3
+      - zlib1g
+      - lua-sec
+      - lua-event
+      - certbot
+      - python3-certbot-nginx
+      - openjdk-11-jre-headless
+      - python3-pexpect
+      - liblua5.2-dev
+#      - prosody
+
 - name: Install prosody repository signing key
   apt_key:
     url: https://prosody.im/files/prosody-debian-packages.key
@@ -17,13 +32,13 @@
     mode: '0600'
     backup: yes
   with_items:
-    - prosody-0.11_1nightly131-1~focal_amd64.deb
+    - prosody_0.11.10-1~focal1_amd64.deb
 
 - name: Install Prosody Package
   apt:
     deb: "/opt/jitispackages/{{ item }}"
   with_items:
-    - prosody-0.11_1nightly131-1~focal_amd64.deb
+    - prosody_0.11.10-1~focal1_amd64.deb
 
 - name: Set debconf-answers for jitsi-meet-web-config
   debconf:
@@ -36,19 +51,6 @@
     - { name: 'jitsi-meet-web-config', question: 'jitsi-videobridge/jvb-hostname', value: '{{ hostname }}', vtype: 'string' }
     - { name: 'jitsi-meet-web-config', question: 'jitsi-meet/cert-choice', value: 'Generate a new self-signed certificate (You will later get a chance to obtain a Let''s encrypt certificate)', vtype: 'string' }
 
-- name: install stuff
-  apt:
-    name:
-      - nginx
-      - libpcre3
-      - zlib1g
-      - lua-sec
-      - lua-event
-      - certbot
-      - python3-certbot-nginx
-      - openjdk-14-jre-headless
-      - python3-pexpect
-
 - name: Copy Jitsi Package to host
   ansible.builtin.copy:
     src: files/{{ item }}
@@ -59,20 +61,16 @@
     backup: yes
   with_items:
     - jicofo_1.0-692-hf-1_all.deb
-    - jitsi-meet-web_1.0.5056-1_all.deb
-    - jitsi-meet-web-config_1.0.5056-1_all.deb
-    - jitsi-meet-prosody_1.0.5056-1_all.deb
-    - jitsi-meet-tokens_1.0.5056-1_all.deb
+    - jitsi-meet-prosody_1.0.5307-1_all.deb
+    - jitsi-meet-tokens_1.0.5307-1_all.deb
 
 - name: Install Jitsi Packages
   apt:
     deb: "/opt/jitispackages/{{ item }}"
   with_items:
     - jicofo_1.0-692-hf-1_all.deb
-    - jitsi-meet-web_1.0.5056-1_all.deb
-    - jitsi-meet-web-config_1.0.5056-1_all.deb
-    - jitsi-meet-prosody_1.0.5056-1_all.deb
-    - jitsi-meet-tokens_1.0.5056-1_all.deb
+    - jitsi-meet-prosody_1.0.5307-1_all.deb
+    - jitsi-meet-tokens_1.0.5307-1_all.deb
 
 - name: create /etc/systemd/system/prosody.service.d
   file:
