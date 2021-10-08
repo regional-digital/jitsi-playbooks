@@ -61,16 +61,16 @@
     backup: yes
   with_items:
     - jicofo_1.0-692-hf-1_all.deb
-    - jitsi-meet-prosody_1.0.5307-1_all.deb
-    - jitsi-meet-tokens_1.0.5307-1_all.deb
+    - jitsi-meet-prosody_1.0.5415-1_all.deb
+    - jitsi-meet-tokens_1.0.5415-1_all.deb
 
 - name: Install Jitsi Packages
   apt:
     deb: "/opt/jitispackages/{{ item }}"
   with_items:
     - jicofo_1.0-692-hf-1_all.deb
-    - jitsi-meet-prosody_1.0.5307-1_all.deb
-    - jitsi-meet-tokens_1.0.5307-1_all.deb
+    - jitsi-meet-prosody_1.0.5415-1_all.deb
+    - jitsi-meet-tokens_1.0.5415-1_all.deb
 
 - name: create /etc/systemd/system/prosody.service.d
   file:
