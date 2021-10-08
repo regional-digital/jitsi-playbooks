@@ -11,7 +11,7 @@
 - name: install stuff
   apt:
     name:
-      - openjdk-14-jre-headless
+      - default-jre-headless
 
 - name: Copy Jitsi Package to host
   ansible.builtin.copy:

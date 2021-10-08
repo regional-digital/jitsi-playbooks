@@ -13,7 +13,7 @@
       - lua-event
       - certbot
       - python3-certbot-nginx
-      - openjdk-14-jre-headless
+      - default-jre-headless
       - python3-pexpect
       - liblua5.2-dev
 #      - prosody
