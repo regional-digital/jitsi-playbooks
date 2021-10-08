@@ -22,13 +22,13 @@
     mode: '0600'
     backup: yes
   with_items:
-    - jitsi-videobridge2_2.1-551-g2ad6eb0b-1_all.deb
+    - jitsi-videobridge2_2.1-570-gb802be83-1_all.deb
 
 - name: Install Jitsi Packages
   apt:
     deb: "/opt/jitispackages/{{ item }}"
   with_items:
-    - jitsi-videobridge2_2.1-551-g2ad6eb0b-1_all.deb
+    - jitsi-videobridge2_2.1-570-gb802be83-1_all.deb
 
 - name: generate /etc/jitsi/videobridge/logging.properties
   template:
