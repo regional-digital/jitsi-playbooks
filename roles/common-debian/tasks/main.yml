@@ -1,0 +1,97 @@
+---
+- name: Set a hostname
+  hostname:
+    name: "{{ fqdn }}"
+
+- name: Install system tools and utilities
+  apt:
+    name: 
+      - sudo
+      - wget
+      - curl
+      - python-apt-common
+      - apt-transport-https
+      - gpg
+      - gpg-agent
+      - bash-completion
+      - jq
+      - dnsutils
+      - htop
+      - tmux
+      - vim
+      - multitail
+    update_cache: yes
+
+- name: create users
+  command: adduser --gecos "" --disabled-password {{ item }}
+  args:
+    creates: /home/{{ item }}
+  with_items: "{{ users }}"
+
+- name: adding existing users to groups sudo and adm
+  user:
+    name: '{{ item }}'
+    groups: sudo,adm
+    append: yes
+  with_items: "{{ users }}"
+
+- name: "Allow sudo users to sudo without a password"
+  lineinfile:
+    dest: "/etc/sudoers"
+    state: "present"
+    regexp: "^%sudo"
+    line: "%sudo\tALL=(ALL:ALL) NOPASSWD:ALL"
+    validate: '/usr/sbin/visudo -cf %s'
+    backup: yes
+
+- name: "Add authorized keys"
+  authorized_key:
+    user: "{{ item }}"
+    key: "{{ lookup('file', filePathPrefix + '/'+ item + '.key.pub') }}"
+  with_items: "{{ users }}"
+  when: users is defined
+
+- name: generate /etc/sysctl.d/30-disable-ipv6.conf (disable IPv6)
+  template:
+    src: 30-disable-ipv6.conf.j2
+    dest: /etc/sysctl.d/30-disable-ipv6.conf
+    owner: root
+    group: root
+    mode: "0644"
+  notify:
+    - systemctl apply
+
+- name: generate /etc/netplan/99_vlan.yaml
+  template:
+    src: 99_vlan.yaml.j2
+    dest: /etc/netplan/99_vlan.yaml
+    owner: root
+    group: root
+    mode: "0644"
+  when: private_vlan_ip is defined
+  notify:
+    - netplan apply
+
+- name: edit hosts 1
+  blockinfile:
+    path: /etc/hosts
+    marker: "## {mark} ANSIBLE MANAGED BLOCK 1 ##"
+    block: "{{ hostsblock1 }}"
+    backup: yes
+  when: private_vlan_ip is defined
+
+- name: edit hosts 2
+  blockinfile:
+    path: /etc/hosts
+    marker: "## {mark} ANSIBLE MANAGED BLOCK 2 ##"
+    block: |
+      127.0.0.1 localhost.localdomain localhost {{ inventory_hostname  }} {{ fqdn  }}
+    backup: yes
+
+- name: create folder for packages
+  file:
+    path: /opt/ansiblepackages
+    state: directory
+    owner: root
+    group: root
+    mode: '0600'
