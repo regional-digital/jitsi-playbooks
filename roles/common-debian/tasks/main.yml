@@ -1,4 +1,35 @@
 ---
+- name: check if ssh on defined port running
+  wait_for:
+    port: "{{ ssh_port }}"
+    state: "started"
+    host: "{{ inventory_hostname }}"
+    connect_timeout: "5"
+    timeout: "10"
+  delegate_to: "localhost"
+  ignore_errors: "yes"
+  register: final_ssh
+
+- name: Set configured port fact
+  set_fact:
+    configured_port: "{{ ansible_port }}"
+  when: final_ssh is defined and final_ssh.failed == True
+
+- name: Set inventory ansible_port to default
+  set_fact:
+    ansible_port: "22"
+  when: final_ssh is defined and final_ssh.failed == True
+
+- name: generate /etc/ssh/sshd_config
+  template:
+    src: sshd_config.j2
+    dest: /etc/ssh/sshd_config
+    owner: root
+    group: root
+    mode: "0644"
+  notify:
+    - restart sshd
+
 - name: Set a hostname
   hostname:
     name: "{{ fqdn }}"
@@ -20,6 +51,7 @@
       - tmux
       - vim
       - multitail
+      - vlan
     update_cache: yes
 
 - name: create users
@@ -28,10 +60,10 @@
     creates: /home/{{ item }}
   with_items: "{{ users }}"
 
-- name: adding existing users to groups sudo and adm
+- name: adding existing users to groups sudo
   user:
     name: '{{ item }}'
-    groups: sudo,adm
+    groups: sudo
     append: yes
   with_items: "{{ users }}"
 
@@ -61,16 +93,19 @@
   notify:
     - systemctl apply
 
-- name: generate /etc/netplan/99_vlan.yaml
+- name: generate /etc/network/interfaces.d/99_vlan_{{ privateVLANID }}.conf
   template:
-    src: 99_vlan.yaml.j2
-    dest: /etc/netplan/99_vlan.yaml
+    src: 99_vlan.conf.j2
+    dest: /etc/network/interfaces.d/99_vlan_{{ privateVLANID }}.conf
     owner: root
     group: root
     mode: "0644"
   when: private_vlan_ip is defined
-  notify:
-    - netplan apply
+  register: vlan
+
+- name: ifup vlan if vlan changed
+  command: ifup {{ ansible_default_ipv4.interface }}.{{ privateVLANID }}
+  when: vlan.changed
 
 - name: edit hosts 1
   blockinfile:
