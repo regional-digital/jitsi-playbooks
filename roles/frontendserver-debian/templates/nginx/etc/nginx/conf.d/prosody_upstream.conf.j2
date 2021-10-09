@@ -1,0 +1,9 @@
+upstream prosody_upstream {
+    hash $arg_room consistent;
+    server signal01.{{ dnsdomain }}:5280; # shard1
+    server signal02.{{ dnsdomain }}:5280; # shard2
+}
+
+map $arg_room $jitsi_upstream {
+    default prosody_upstream;
+}
