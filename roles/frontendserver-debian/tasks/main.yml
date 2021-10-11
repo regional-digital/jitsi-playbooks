@@ -401,37 +401,24 @@
   notify:
     - restart prosody
 
+- name: generate /etc/jitsi/jicofo/config
+  template:
+    src: jicofo/config.j2
+    dest: /etc/jitsi/jicofo/config
+    owner: jicofo
+    group: jitsi
+    mode: "0644"
+    backup: yes
+  notify:
+    - restart jicofo
 
-#- name: generate /etc/jitsi/jicofo/config
-#  template:
-#    src: jicofo/config.j2
-#    dest: /etc/jitsi/jicofo/config
-#    owner: jicofo
-#    group: jitsi
-#    mode: "0644"
-#    backup: yes
-#  notify:
-#    - restart jicofo
-#
-#- name: generate /etc/jitsi/jicofo/jicofo.conf
-#  template:
-#    src: jicofo/jicofo.conf.j2
-#    dest: /etc/jitsi/jicofo/jicofo.conf
-#    owner: jicofo
-#    group: jitsi
-#    mode: "0644"
-#    backup: yes
-#  notify:
-#    - restart jicofo
-#
-#- name: generate /etc/jitsi/jicofo/sip-communicator.properties
-#  template:
-#    src: jicofo/sip-communicator.properties.j2
-#    dest: /etc/jitsi/jicofo/sip-communicator.properties
-#    owner: jicofo
-#    group: jitsi
-#    mode: "0600"
-#    backup: yes
-#  notify:
-#    - restart jicofo
-#
+- name: generate /etc/jitsi/jicofo/jicofo.conf
+  template:
+    src: jicofo/jicofo.conf.j2
+    dest: /etc/jitsi/jicofo/jicofo.conf
+    owner: jicofo
+    group: jitsi
+    mode: "0644"
+    backup: yes
+  notify:
+    - restart jicofo
