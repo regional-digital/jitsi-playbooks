@@ -1,17 +1,18 @@
 ---
-#- name: reload nginx
-#  service: 
-#    name: nginx
-#    state: reloaded
-#- name: restart prosody
-#  service: 
-#    name: prosody
-#    state: restarted
-#- name: restart jicofo
-#  service: 
-#    name: jicofo
-#    state: restarted
-#- name: reload systemd
-#  service: 
-#    name: systemd
-#    state: reloaded
+- name: reload nginx
+  service: 
+    name: nginx
+    state: reloaded
+
+- name: restart prosody
+  service: 
+    name: prosody
+    state: restarted
+- name: restart jicofo
+  service: 
+    name: jicofo
+    state: restarted
+- name: reload systemd
+  service: 
+    name: systemd
+    state: reloaded

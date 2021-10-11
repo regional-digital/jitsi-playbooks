@@ -7,8 +7,8 @@ videobridge {
         xmpp-client {
             configs {
                 shard1 {
-                    hostname = "signal01.{{ dnsdomain }}"
-                    domain = "auth.open.jitsi"
+                    hostname = "deb-signal01"
+                    domain = "auth.openjitsi"
                     username = "jvb"
                     password = "{{ prosody_user_jvb_password }}"
                     muc_jids = "JvbBrewery@internal.auth.open.jitsi"
@@ -16,23 +16,33 @@ videobridge {
                     disable_certificate_verification = true
                 }
                 shard2 {
-                    hostname = "signal02.{{ dnsdomain }}"
-                    domain = "auth.open.jitsi"
-                    username = "jvb"
-                    password = "{{ prosody_user_jvb_password }}"
-                    muc_jids = "JvbBrewery@internal.auth.open.jitsi"
-                    muc_nickname = "{{ hostname }}"
-                    disable_certificate_verification = true
-                }
-                secureshard1 {
-                    hostname = "securesignal01.{{ dnsdomain }}"
-                    domain = "auth.closed.jitsi"
+                    hostname = "deb-signal01"
+                    domain = "auth.closedjitsi"
                     username = "jvb"
                     password = "{{ prosody_user_jvb_password }}"
                     muc_jids = "JvbBrewery@internal.auth.closed.jitsi"
                     muc_nickname = "{{ hostname }}"
                     disable_certificate_verification = true
                 }
+                shard3 {
+                    hostname = "deb-signal02"
+                    domain = "auth.openjitsi"
+                    username = "jvb"
+                    password = "{{ prosody_user_jvb_password }}"
+                    muc_jids = "JvbBrewery@internal.auth.open.jitsi"
+                    muc_nickname = "{{ hostname }}"
+                    disable_certificate_verification = true
+                }
+                shard4 {
+                    hostname = "deb-signal02"
+                    domain = "auth.closedjitsi"
+                    username = "jvb"
+                    password = "{{ prosody_user_jvb_password }}"
+                    muc_jids = "JvbBrewery@internal.auth.closed.jitsi"
+                    muc_nickname = "{{ hostname }}"
+                    disable_certificate_verification = true
+                }
+
             }
         }
     }

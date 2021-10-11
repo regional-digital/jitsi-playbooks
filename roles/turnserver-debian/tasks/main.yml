@@ -1,0 +1,67 @@
+---
+- include_role:
+    name: acme.sh
+
+- name: install coturn
+  apt:
+    name:
+      - coturn
+
+#- name: generate /etc/turnserver.conf
+#  template:
+#    src: turnserver.conf.j2
+#    dest: /etc/turnserver.conf
+#    owner: root
+#    group: root
+#    mode: "0644"
+#    backup: yes
+#  notify:
+#    - restart coturn
+
+#- name: generate /lib/systemd/system/coturn.service
+#  template:
+#    src: coturn.service.j2
+#    dest: /lib/systemd/system/coturn.service
+#    owner: root
+#    group: root
+#    mode: "0644"
+#    backup: yes
+#  notify:
+#    - reload coturn config
+#    - restart coturn
+
+#- name: create /etc/coturn
+#  file:
+#    state: directory
+#    path: /etc/coturn
+#    owner: turnserver
+#    group: turnserver
+#    mode: '0770'
+#  notify:
+#    - restart coturn
+
+#- name: create certificate
+#  shell: /root/.acme.sh/acme.sh --issue --domain {{ turnservername }} --key-file /usr/local/etc/turn_server_pkey.pem --fullchain-file /usr/local/etc/turn_server_cert.pem --reloadcmd "systemctl restart coturn" --email {{ letsencrypt_email }} --insecure --standalone --listen-v4 {{ acme_sh_additional_options }} --force
+#  args:
+#    warn: false
+#    creates: /usr/local/etc/turn_server_cert.pem
+
+#- name: chmod&chown /usr/local/etc/turn_server_pkey.pem
+#  file:
+#    state: file
+#    path: /usr/local/etc/turn_server_pkey.pem
+#    owner: turnserver
+#    group: turnserver
+#    mode: '0400'
+#  notify:
+#    - restart coturn
+
+#- name: chmod&chown /usr/local/etc/turn_server_cert.pem
+#  file:
+#    state: file
+#    path: /usr/local/etc/turn_server_cert.pem
+#    owner: turnserver
+#    group: turnserver
+#    mode: '0400'
+#  notify:
+#    - restart coturn
