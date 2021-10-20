@@ -12,7 +12,6 @@
   service: 
     name: jicofo
     state: restarted
+
 - name: reload systemd
-  service: 
-    name: systemd
-    state: reloaded
+  command: systemctl daemon-reload

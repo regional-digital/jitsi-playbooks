@@ -3,13 +3,13 @@
 jicofo {
   xmpp: {
     client: {
-      client-proxy: focus.{{ hostname }}
+      client-proxy: focus.{{ shardName }}
       disable-certificate-verification = true
     }
-    trusted-domains: [ "recorder.{{ hostname }}" ]
+    trusted-domains: [ "recorder.{{ shardName }}" ]
   }
   bridge: {
-    brewery-jid: "JvbBrewery@internal.auth.{{ hostname }}"
+    brewery-jid: "JvbBrewery@internal.auth.{{ shardName }}"
     health-checks {
         enabled = true
         interval = 10 seconds

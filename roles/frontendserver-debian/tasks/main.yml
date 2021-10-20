@@ -36,6 +36,8 @@
     - jitsi-meet-tokens_1.0.5415-1_all.deb
     - jitsi-meet-web_1.0.5415-1_all.deb
     - jitsi-meet-web-config_1.0.5415-1_all.deb
+  notify:
+    - reload systemd
 
 #first care about nginx
 - name: /etc/nginx/nginx.conf
@@ -293,15 +295,14 @@
     - reload systemd
     - restart prosody
 
-- name: generate /etc/prosody/conf.d/{{ item }}.cfg.lua
+- name: generate /etc/prosody/conf.d/{{ shardName }}.cfg.lua
   template:
     src: prosody/etc/prosody/conf.d/prosodydomain.cfg.lua.j2
-    dest: /etc/prosody/conf.d/{{ item }}.cfg.lua
+    dest: /etc/prosody/conf.d/{{ shardName }}.cfg.lua
     owner: prosody
     group: prosody
     mode: "0664"
     backup: yes
-  with_items: "{{ prosodyDomains }}"
   notify:
     - restart prosody 
 
@@ -316,19 +317,21 @@
   notify:
     - restart prosody 
 
-- name: generate prosody key for {{ item[1] }}{{ item[0] }}
-  command: prosodyctl cert key {{ item[1] }}{{ item[0] }} 2048
+- name: generate prosody key for {{ item }}{{ shardName }}
+  command: prosodyctl cert key {{ item }}{{ shardName }} 2048
   args:
-    creates: /var/lib/prosody/{{ item[1] }}{{ item[0] }}.key
-  with_nested:
-    - "{{ prosodyDomains }}"
+    creates: /var/lib/prosody/{{ item }}{{ shardName }}.key
+  with_items:
     - ['', 'auth.']
   notify:
     - restart prosody
 
-- name: generate prosody certs for {{ item[1] }}{{ item[0] }}
+- name: Flush handlers
+  meta: flush_handlers
+
+- name: generate prosody certs for {{ item }}{{ shardName }}
   expect:
-    command: prosodyctl cert generate {{ item[1] }}{{ item[0] }}
+    command: prosodyctl cert generate {{ item }}{{ shardName }}
     responses:
       (.*)exists, do you want to replace it(.*): "n"
       (.*)countryName(.*): ""
@@ -338,65 +341,58 @@
       (.*)commonName(.*): ""
       (.*)emailAddress(.*): ""
   args: 
-    creates: /var/lib/prosody/{{ item[1] }}{{ item[0] }}.crt
-  with_nested:
-    - "{{ prosodyDomains }}"
+    creates: /var/lib/prosody/{{ item }}{{ shardName }}.crt
+  with_items:
     - ['', 'auth.']
   notify:
     - restart prosody
 
 - name: link prosodyfiles
   ansible.builtin.file:
-    src: /var/lib/prosody/{{ item[1] }}{{ item[0] }}.{{ item[2] }}
-    dest: /etc/prosody/certs/{{ item[1] }}{{ item[0] }}.{{ item[2] }}
+    src: /var/lib/prosody/{{ item[0] }}{{ shardName }}.{{ item[1] }}
+    dest: /etc/prosody/certs/{{ item[0] }}{{ shardName }}.{{ item[1] }}
     state: link
   with_nested:
-    - "{{ prosodyDomains }}"
     - ['', 'auth.']
     - ['crt', 'key']
   notify:
     - restart prosody
 
-- name: create /var/lib/prosody/auth%2e{{ item }}
+- name: create /var/lib/prosody/auth%2e{{ shardName }}
   file:
     state: directory
-    dest: /var/lib/prosody/auth%2e{{ item }}
+    dest: /var/lib/#prosody/auth%2e{{ shardName }}
     owner: prosody
     group: prosody
     mode: "0750"
-  with_items: "{{ prosodyDomains }}"
 
-- name: create /var/lib/prosody/auth%2e{{ item }}/accounts
+- name: create /var/lib/prosody/auth%2e{{ shardName }}/accounts
   file:
     state: directory
-    dest: /var/lib/prosody/auth%2e{{ item }}/accounts
+    dest: /var/lib/prosody/auth%2e{{ shardName }}/accounts
     owner: prosody
     group: prosody
     mode: "0750"
-  with_items: "{{ prosodyDomains }}"
 
-
-- name: generate /var/lib/prosody/auth%2e{{ item }}/accounts/jvb.dat
+- name: generate /var/lib/prosody/auth%2e{{ shardName }}/accounts/jvb.dat
   expect:
-    command: prosodyctl adduser jvb@auth.{{ item }}
+    command: prosodyctl adduser jvb@auth.{{ shardName }}
     responses:
       (.*)Enter new password(.*): "{{ prosody_user_jvb_password }}"
       (.*)Retype new password(.*): "{{ prosody_user_jvb_password }}"
   args:
-    creates: /var/lib/prosody/auth%2e{{ item }}/accounts/jvb.dat
-  with_items: "{{ prosodyDomains }}"
+    creates: /var/lib/prosody/auth%2e{{ shardName }}/accounts/jvb.dat
   notify:
     - restart prosody
 
-- name: generate /var/lib/prosody/auth%2e{{ item }}/accounts/jigasi.dat
+- name: generate /var/lib/prosody/auth%2e{{ shardName }}/accounts/jigasi.dat
   expect:
-    command: prosodyctl adduser jigasi@auth.{{ item }}
+    command: prosodyctl adduser jigasi@auth.{{ shardName }}
     responses:
       (.*)Enter new password(.*): "{{ prosody_user_jigasi_password }}"
       (.*)Retype new password(.*): "{{ prosody_user_jigasi_password }}"
   args:
-    creates: /var/lib/prosody/auth%2e{{ item }}/accounts/jigasi.dat
-  with_items: "{{ prosodyDomains }}"
+    creates: /var/lib/prosody/auth%2e{{ shardName }}/accounts/jigasi.dat
   when: prosody_user_jigasi_password is defined
   notify:
     - restart prosody

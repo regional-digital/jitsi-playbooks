@@ -6,43 +6,20 @@ videobridge {
         }
         xmpp-client {
             configs {
-                shard1 {
-                    hostname = "deb-signal01"
-                    domain = "auth.openjitsi"
-                    username = "jvb"
-                    password = "{{ prosody_user_jvb_password }}"
-                    muc_jids = "JvbBrewery@internal.auth.openjitsi"
-                    muc_nickname = "{{ hostname }}"
-                    disable_certificate_verification = true
-                }
-                shard2 {
-                    hostname = "deb-signal01"
-                    domain = "auth.closedjitsi"
-                    username = "jvb"
-                    password = "{{ prosody_user_jvb_password }}"
-                    muc_jids = "JvbBrewery@internal.auth.closedjitsi"
-                    muc_nickname = "{{ hostname }}"
-                    disable_certificate_verification = true
-                }
-                shard3 {
-                    hostname = "deb-signal02"
-                    domain = "auth.openjitsi"
-                    username = "jvb"
-                    password = "{{ prosody_user_jvb_password }}"
-                    muc_jids = "JvbBrewery@internal.auth.openjitsi"
-                    muc_nickname = "{{ hostname }}"
-                    disable_certificate_verification = true
-                }
-                shard4 {
-                    hostname = "deb-signal02"
-                    domain = "auth.closedjitsi"
-                    username = "jvb"
-                    password = "{{ prosody_user_jvb_password }}"
-                    muc_jids = "JvbBrewery@internal.auth.closedjitsi"
-                    muc_nickname = "{{ hostname }}"
-                    disable_certificate_verification = true
-                }
+{% for signalserverhostname in groups['frontendserver-debian'] %}
+{% for prosodyDomain in  prosodyDomains %}
 
+                shard-{{ prosodyDomain }}-{{ signalserverhostname }} {
+                    hostname = "{{ signalserverhostname }}"
+                    domain = "auth.{{ prosodyDomain }}"
+                    username = "jvb"
+                    password = "{{ prosody_user_jvb_password }}"
+                    muc_jids = "JvbBrewery@internal.auth.shardopenjitsi"
+                    muc_nickname = "{{ hostname }}"
+                    disable_certificate_verification = true
+                }
+{% endfor %}
+{% endfor %}
             }
         }
     }

@@ -1,7 +1,7 @@
 plugin_paths = { "/usr/share/jitsi-meet/prosody-plugins/" }
 
 -- domain mapper options, must at least have domain base set to use the mapper
-muc_mapper_domain_base = "{{ item }}";
+muc_mapper_domain_base = "{{ shardName }}";
 
 external_service_secret = "{{ turncredentials_secret }}";
 external_services = {
@@ -21,16 +21,16 @@ ssl = {
 }
 
 unlimited_jids = {
-    "focus@auth.{{ item }}",
-    "jvb@auth.{{ item }}"
+    "focus@auth.{{ shardName }}",
+    "jvb@auth.{{ shardName }}"
 }
 
-VirtualHost "{{ item }}"
+VirtualHost "{{ shardName }}"
     -- enabled = false -- Remove this line to enable this host
     authentication = "{{ authentication | default('anonymous') }}"
     -- Properties below are modified by jitsi-meet-tokens package config
     -- and authentication above is switched to "token"
-{% if prosodyDomainConfig[item].authentication is defined %}
+{% if authentication is defined %}
     app_id="{{ app_id }}"
     app_secret="{{ app_secret }}"
 {% else %}
@@ -42,12 +42,12 @@ VirtualHost "{{ item }}"
     -- Note that old-style SSL on port 5223 only supports one certificate, and will always
     -- use the global one.
     ssl = {
-        key = "/etc/prosody/certs/{{ item }}.key";
-        certificate = "/etc/prosody/certs/{{ item }}.crt";
+        key = "/etc/prosody/certs/{{ shardName }}.key";
+        certificate = "/etc/prosody/certs/{{ shardName }}.crt";
     }
-    av_moderation_component = "avmoderation.{{ item }}"
-    speakerstats_component = "speakerstats.{{ item }}"
-    conference_duration_component = "conferenceduration.{{ item }}"
+    av_moderation_component = "avmoderation.{{ shardName }}"
+    speakerstats_component = "speakerstats.{{ shardName }}"
+    conference_duration_component = "conferenceduration.{{ shardName }}"
     -- we need bosh
     modules_enabled = {
         "bosh";
@@ -60,11 +60,11 @@ VirtualHost "{{ item }}"
         "av_moderation";
     }
     c2s_require_encryption = false
-    lobby_muc = "lobby.{{ item }}"
-    main_muc = "conference.{{ item }}"
-    -- muc_lobby_whitelist = { "recorder.{{ item }}" } -- Here we can whitelist jibri to enter lobby enabled rooms
+    lobby_muc = "lobby.{{ shardName }}"
+    main_muc = "conference.{{ shardName }}"
+    -- muc_lobby_whitelist = { "recorder.{{ shardName }}" } -- Here we can whitelist jibri to enter lobby enabled rooms
 
-Component "conference.{{ item }}" "muc"
+Component "conference.{{ shardName }}" "muc"
     restrict_room_creation = true
     storage = "memory"
     modules_enabled = {
@@ -75,24 +75,24 @@ Component "conference.{{ item }}" "muc"
         "token_verification";
 {% endif %}
     }
-    admins = { "focus@auth.{{ item }}" }
+    admins = { "focus@auth.{{ shardName }}" }
     muc_room_locking = false
     muc_room_default_public_jids = true
 
 -- internal muc component
-Component "internal.auth.{{ item }}" "muc"
+Component "internal.auth.{{ shardName }}" "muc"
     storage = "memory"
     modules_enabled = {
         "ping";
     }
-    admins = { "focus@auth.{{ item }}", "jvb@auth.{{ item }}" }
+    admins = { "focus@auth.{{ shardName }}", "jvb@auth.{{ shardName }}" }
     muc_room_locking = false
     muc_room_default_public_jids = true
 
-VirtualHost "auth.{{ item }}"
+VirtualHost "auth.{{ shardName }}"
     ssl = {
-        key = "/etc/prosody/certs/auth.{{ item }}.key";
-        certificate = "/etc/prosody/certs/auth.{{ item }}.crt";
+        key = "/etc/prosody/certs/auth.{{ shardName }}.key";
+        certificate = "/etc/prosody/certs/auth.{{ shardName }}.crt";
     }
     modules_enabled = {
         "limits_exception";
@@ -100,19 +100,19 @@ VirtualHost "auth.{{ item }}"
     authentication = "internal_hashed"
 
 -- Proxy to jicofo's user JID, so that it doesn't have to register as a component.
-Component "focus.{{ item }}" "client_proxy"
-    target_address = "focus@auth.{{ item }}"
+Component "focus.{{ shardName }}" "client_proxy"
+    target_address = "focus@auth.{{ shardName }}"
 
-Component "speakerstats.{{ item }}" "speakerstats_component"
-    muc_component = "conference.{{ item }}"
+Component "speakerstats.{{ shardName }}" "speakerstats_component"
+    muc_component = "conference.{{ shardName }}"
 
-Component "conferenceduration.{{ item }}" "conference_duration_component"
-    muc_component = "conference.{{ item }}"
+Component "conferenceduration.{{ shardName }}" "conference_duration_component"
+    muc_component = "conference.{{ shardName }}"
 
-Component "avmoderation.{{ item }}" "av_moderation_component"
-    muc_component = "conference.{{ item }}"
+Component "avmoderation.{{ shardName }}" "av_moderation_component"
+    muc_component = "conference.{{ shardName }}"
 
-Component "lobby.{{ item }}" "muc"
+Component "lobby.{{ shardName }}" "muc"
     storage = "memory"
     restrict_room_creation = true
     muc_room_locking = false

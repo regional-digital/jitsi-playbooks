@@ -1,7 +1,8 @@
 upstream prosody_upstream {
     hash $arg_room consistent;
-    server signal01.{{ dnsdomain }}:5280; # shard1
-    server signal02.{{ dnsdomain }}:5280; # shard2
+{% for clusterNode in groups[shardName] %}
+    server {{ clusterNode }}{{ dnsdomain }}:5280; # shard1
+{% endfor %}
 }
 
 map $arg_room $jitsi_upstream {
