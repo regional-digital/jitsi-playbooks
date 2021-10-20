@@ -31,7 +31,7 @@ Port {{ ssh_port }}
 # Authentication:
 
 #LoginGraceTime 2m
-PermitRootLogin no
+PermitRootLogin {{ PermitRootLogin | default("no") }} 
 #StrictModes yes
 #MaxAuthTries 6
 #MaxSessions 10
