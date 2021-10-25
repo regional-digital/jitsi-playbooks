@@ -1,4 +1,4 @@
 ---
-- hosts: turnserver-debian
+- hosts: turnserver
   roles:
     - turnserver-debian

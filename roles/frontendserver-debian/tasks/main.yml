@@ -299,9 +299,9 @@
   template:
     src: prosody/etc/prosody/conf.d/prosodydomain.cfg.lua.j2
     dest: /etc/prosody/conf.d/{{ shardName }}.cfg.lua
-    owner: prosody
-    group: prosody
-    mode: "0664"
+    owner: root
+    group: root
+    mode: "0644"
     backup: yes
   notify:
     - restart prosody 
@@ -313,6 +313,17 @@
     owner: root
     group: root
     mode: "0644"
+    backup: yes
+  notify:
+    - restart prosody 
+
+- name: generate /etc/prosody/prosody.cfg.lua
+  template:
+    src: prosody/etc/prosody/prosody.cfg.lua.j2
+    dest: /etc/prosody/prosody.cfg.lua
+    owner: root
+    group: prosody
+    mode: "0640"
     backup: yes
   notify:
     - restart prosody 
@@ -385,6 +396,17 @@
   notify:
     - restart prosody
 
+- name: generate /var/lib/prosody/auth%2e{{ shardName }}/accounts/focus.dat
+  expect:
+    command: prosodyctl adduser focus@auth.{{ shardName }}
+    responses:
+      (.*)Enter new password(.*): "{{ prosody_user_focus_password }}"
+      (.*)Retype new password(.*): "{{ prosody_user_focus_password }}"
+  args:
+    creates: /var/lib/prosody/auth%2e{{ shardName }}/accounts/jigasi.dat
+  notify:
+    - restart prosody
+
 - name: generate /var/lib/prosody/auth%2e{{ shardName }}/accounts/jigasi.dat
   expect:
     command: prosodyctl adduser jigasi@auth.{{ shardName }}
@@ -407,6 +429,11 @@
     backup: yes
   notify:
     - restart jicofo
+
+- name: generate /var/lib/prosody/auth%2e{{ shardName }}/roster/focus.dat
+  command: prosodyctl mod_roster_command subscribe focus.{{ shardName }} focus@auth.{{ shardName }}
+  args:
+    creates: /var/lib/prosody/auth%2e{{ shardName }}/roster/focus.dat
 
 - name: generate /etc/jitsi/jicofo/jicofo.conf
   template:

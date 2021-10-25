@@ -50,12 +50,12 @@ server {
 {% if instanceVars.dialInNumbers is defined %}
     location = /numbers.json {
         alias /etc/jitsi/meet/numbers-{{ item }}.json;
-        vhost_traffic_status_bypass_stats on;
+#        vhost_traffic_status_bypass_stats on;
     }
 
     location = /conferenceMapper {
         proxy_pass http://10.0.0.103:8001/conferenceMapper?$query_string;
-        vhost_traffic_status_bypass_stats on;
+#        vhost_traffic_status_bypass_stats on;
     }
 
 {% endif %}
@@ -92,15 +92,13 @@ server {
     # BOSH
     location = /http-bind {
 {% if cluster_partner is defined %}
-        proxy_pass      http://prosody_upstream/http-bind;
+        proxy_pass      http://prosody_upstream/http-bind?prefix=$prefix&$args;
 {% else %}
-        proxy_pass      http://{{ fqdn }}:5280/http-bind;
+        proxy_pass      http://127.0.0.1:5280/http-bind?prefix=$prefix&$args;
 {% endif %}
         proxy_next_upstream  off;
         proxy_set_header X-Forwarded-For $remote_addr;
-        #proxy_set_header Host $http_host;
-        proxy_set_header Host open.jitsi;
-        vhost_traffic_status_bypass_stats on;
+        proxy_set_header Host {{ shardName }};
     }
 
     # xmpp websockets
@@ -109,26 +107,29 @@ server {
 {% if cluster_partner is defined %}
        proxy_pass http://prosody_upstream/xmpp-websocket?prefix=$prefix&$args;
 {% else %}
-       proxy_pass http://{{ fqdn }}:5280/xmpp-websocket?prefix=$prefix&$args;
+       proxy_pass http://127.0.0.1:5280/xmpp-websocket?prefix=$prefix&$args;
 {% endif %}
-       proxy_next_upstream  off;
-       proxy_http_version 1.1;
-       proxy_set_header Upgrade $http_upgrade;
-       proxy_set_header Connection "upgrade";
-       #proxy_set_header Host $http_host;
-       proxy_set_header Host open.jitsi;
-       tcp_nodelay on;
-       proxy_read_timeout      900s;
-       proxy_connect_timeout   900s;
-       proxy_send_timeout      900s;
-       send_timeout            900s;
-       vhost_traffic_status_bypass_stats on;
+       
+        #shard & region that matches config.deploymentInfo.shard/region -  See [note 1] below
+        add_header 'x-jitsi-shard' '{{ shardName }}';
+        add_header 'x-jitsi-region' '{{ userRegion }}';
+        add_header 'Access-Control-Expose-Headers' 'X-Jitsi-Shard, X-Jitsi-Region';
+
+        proxy_set_header X-Forwarded-For $remote_addr;
+        proxy_set_header Host {{ shardName }};
+
+        proxy_http_version 1.1;
+        proxy_buffer_size 128k;
+        proxy_buffers 4 256k;
+        proxy_busy_buffers_size  256k;
+        proxy_set_header Connection "upgrade";
+        tcp_nodelay on;
     }
 
     # Enable websockets to bridges
-    location ~ ^/colibri-ws/jvb([0-9]+)/(.*) {
+    location ~ ^/colibri-ws/{{ videobridgeNamePrefix }}([0-9]+)/(.*) {
        resolver 127.0.0.53;
-       proxy_pass http://jvb$1.{{ dnsdomain }}:9090/colibri-ws/jvb$1/$2$is_args$args;
+       proxy_pass http://{{ videobridgeNamePrefix }}$1{{ dnsdomain | default('') }}:9090/colibri-ws/{{ videobridgeNamePrefix }}$1/$2$is_args$args;
        proxy_http_version 1.1;
        proxy_set_header Upgrade $http_upgrade;
        proxy_set_header Connection "Upgrade";
@@ -137,7 +138,7 @@ server {
        proxy_connect_timeout   900s;
        proxy_send_timeout      900s;
        send_timeout            900s;
-       vhost_traffic_status_bypass_stats on;
+#       vhost_traffic_status_bypass_stats on;
     }
 
     location ~ ^/([^/?&:'"]+)$ {
@@ -170,7 +171,7 @@ server {
         set $prefix "$1";
 
         rewrite ^/(.*)$ /http-bind;
-        vhost_traffic_status_bypass_stats on;
+#        vhost_traffic_status_bypass_stats on;
     }
 
     # websockets for subdomains
@@ -180,9 +181,9 @@ server {
         set $prefix "$1";
 
         rewrite ^/(.*)$ /xmpp-websocket;
-        vhost_traffic_status_bypass_stats on;
+#        vhost_traffic_status_bypass_stats on;
     }
-    ssl_certificate /etc/letsencrypt/live/{{ item }}/fullchain.pem; # managed by Certbot
-    ssl_certificate_key /etc/letsencrypt/live/{{ item }}/privkey.pem; # managed by Certbot
+    ssl_certificate /etc/ssl/certs/{{ item }}.pem; # managed by Certbot
+    ssl_certificate_key /etc/ssl/private/{{ item }}.key; # managed by Certbot
 
 }

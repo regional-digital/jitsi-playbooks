@@ -4,6 +4,7 @@ jicofo {
   xmpp: {
     client: {
       client-proxy: focus.{{ shardName }}
+      conference-muc-jid = conference.{{ shardName }}
       disable-certificate-verification = true
     }
     trusted-domains: [ "recorder.{{ shardName }}" ]
@@ -14,7 +15,7 @@ jicofo {
         enabled = true
         interval = 10 seconds
     }
-    selection-strategy = IntraRegionBridgeSelectionStrategy
+    selection-strategy = {{ BridgeSelectionStrategy }}
   }
   octo {
     enabled = false

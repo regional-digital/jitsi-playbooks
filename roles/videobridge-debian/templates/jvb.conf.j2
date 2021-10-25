@@ -6,15 +6,14 @@ videobridge {
         }
         xmpp-client {
             configs {
-{% for signalserverhostname in groups['frontendserver-debian'] %}
-{% for prosodyDomain in  prosodyDomains %}
-
+{% for prosodyDomain in prosodyDomains %}
+{% for signalserverhostname in groups[prosodyDomain] %}
                 shard-{{ prosodyDomain }}-{{ signalserverhostname }} {
                     hostname = "{{ signalserverhostname }}"
                     domain = "auth.{{ prosodyDomain }}"
                     username = "jvb"
                     password = "{{ prosody_user_jvb_password }}"
-                    muc_jids = "JvbBrewery@internal.auth.shardopenjitsi"
+                    muc_jids = "JvbBrewery@internal.auth.{{ prosodyDomain }}"
                     muc_nickname = "{{ hostname }}"
                     disable_certificate_verification = true
                 }
@@ -28,24 +27,31 @@ videobridge {
             host = "0.0.0.0"
             port = "9000"
         }
-        public {
+       public {
             port = "9090"
-        }
+         }
     }
     octo {
         enabled = true
         bind-address = "{{ internal_interface }}"
         bind-port = "4096"
-        region = "BW"
+        region = "{{ userRegion }}"
     }
     rest {
         shutdown {
             enabled = true
         }
     }
+    stats {
+        enabled = true
+        interval = 10 seconds
+        transports = [
+            { type = "muc" }
+        ]
+    }
     websockets {
         enabled = true
-        domain = "{{ frontenddnsname }}:443"
+        domain = "{{ hostname }}:443"
         server-id = "{{ hostname }}"
         tls = true
     }

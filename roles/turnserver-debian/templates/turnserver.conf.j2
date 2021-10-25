@@ -15,7 +15,7 @@
 # Note: actually, TLS & DTLS sessions can connect to the
 # "plain" TCP & UDP port(s), too - if allowed by configuration.
 #
-#listening-port=3478
+listening-port={{ turnserverport }}
 
 # TURN listener port for TLS (Default: 5349).
 # Note: actually, "plain" TCP & UDP sessions can connect to the TLS & DTLS
@@ -27,7 +27,7 @@
 # TLS version 1.0, 1.1 and 1.2.
 # For secure UDP connections, Coturn supports DTLS version 1.
 #
-tls-listening-port=443
+tls-listening-port={{ turnserversport }}
 
 # Alternative listening port for UDP and TCP listeners;
 # default (or zero) value means "listening port plus one".
@@ -247,7 +247,7 @@ static-auth-secret={{ turncredentials_secret }}
 # the oAuth authentication purposes.
 # The default value is the realm name.
 #
-server-name={{ hostname }}.{{ dnsdomain }}
+server-name={{ hostname }}{{ dnsdomain | default('') }}
 
 # Flag that allows oAuth authentication.
 #
@@ -355,7 +355,7 @@ server-name={{ hostname }}.{{ dnsdomain }}
 # Note: If the default realm is not specified, then realm falls back to the host domain name.
 #       If the domain name string is empty, or set to '(None)', then it is initialized as an empty string.
 #
-realm={{ hostname }}.{{ dnsdomain }}
+realm={{ hostname }}{{ dnsdomain | default('') }}
 
 # This flag sets the origin consistency
 # check. Across the session, all requests must have the same

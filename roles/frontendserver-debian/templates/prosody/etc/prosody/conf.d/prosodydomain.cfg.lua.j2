@@ -5,14 +5,17 @@ muc_mapper_domain_base = "{{ shardName }}";
 
 external_service_secret = "{{ turncredentials_secret }}";
 external_services = {
-     { type = "stun", host = "{{ turnservername }}", port = 443 },
-     { type = "turn", host = "{{ turnservername }}", port = 443, transport = "udp", secret = true, ttl = 86400, algorithm = "turn" },
-     { type = "turns", host = "{{ turnservername }}", port = 443, transport = "tcp", secret = true, ttl = 86400, algorithm = "turn" }
+     { type = "stun", host = "{{ turnservername }}", port = {{ turnserverport }} },
+     { type = "turn", host = "{{ turnservername }}", port = {{ turnserverport }}, transport = "udp", secret = true, ttl = 86400, algorithm = "turn" },
+     { type = "turns", host = "{{ turnservername }}", port = {{ turnserverport }}, transport = "tcp", secret = true, ttl = 86400, algorithm = "turn" }
 };
+-- enable websocket support
+consider_websocket_secure = true;
+cross_domain_websocket = true;
 
 cross_domain_bosh = false;
 consider_bosh_secure = true;
--- https_ports = { }; -- Remove this line to prevent listening on port 5284
+https_ports = { }; -- Remove this line to prevent listening on port 5284
 
 -- https://ssl-config.mozilla.org/#server=haproxy&version=2.1&config=intermediate&openssl=1.1.0g&guideline=5.4
 ssl = {
@@ -51,6 +54,8 @@ VirtualHost "{{ shardName }}"
     -- we need bosh
     modules_enabled = {
         "bosh";
+        "websocket";
+        "smacks";
         "pubsub";
         "ping"; -- Enable mod_ping
         "speakerstats";
@@ -59,6 +64,10 @@ VirtualHost "{{ shardName }}"
         "muc_lobby_rooms";
         "av_moderation";
     }
+    smacks_max_unacked_stanzas = 5;
+    smacks_hibernation_time = 60; 
+    smacks_max_hibernated_sessions = 1;
+    smacks_max_old_sessions = 1;
     c2s_require_encryption = false
     lobby_muc = "lobby.{{ shardName }}"
     main_muc = "conference.{{ shardName }}"

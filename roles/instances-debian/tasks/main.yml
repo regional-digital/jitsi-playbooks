@@ -4,9 +4,10 @@
     msg: You can target a single instance only with --extra-vars "instance=instancename"
   when: instance is not defined
 
-- name: message that this will not deploy wwwroot any more
+- name: redeploy-message
   debug:
-    msg: This role will not deploy wwwroot-content of instances any more. use role instances-wwwroot instead but it will terribly fail if you don't run this role before
+    msg: to redeploy or update the used wwwroot of instances use --extra-vars "redeploy"; feel free to combine with instance=instancename
+  when: instance is not defined
 
 # ansible-playbook instances.yml --extra-vars "instance=instancename"
 - name: copy files for instances

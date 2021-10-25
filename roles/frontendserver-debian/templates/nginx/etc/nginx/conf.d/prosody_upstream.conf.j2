@@ -1,7 +1,7 @@
 upstream prosody_upstream {
     hash $arg_room consistent;
 {% for clusterNode in groups[shardName] %}
-    server {{ clusterNode }}{{ dnsdomain }}:5280; # shard1
+    server {{ clusterNode }}{{ dnsdomain | default('') }}:5280; # {{ shardName }}
 {% endfor %}
 }
 
