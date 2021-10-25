@@ -50,12 +50,12 @@ server {
 {% if instanceVars.dialInNumbers is defined %}
     location = /numbers.json {
         alias /etc/jitsi/meet/numbers-{{ item }}.json;
-#        vhost_traffic_status_bypass_stats on;
+        vhost_traffic_status_bypass_stats on;
     }
 
     location = /conferenceMapper {
         proxy_pass http://10.0.0.103:8001/conferenceMapper?$query_string;
-#        vhost_traffic_status_bypass_stats on;
+        vhost_traffic_status_bypass_stats on;
     }
 
 {% endif %}
@@ -99,6 +99,7 @@ server {
         proxy_next_upstream  off;
         proxy_set_header X-Forwarded-For $remote_addr;
         proxy_set_header Host {{ shardName }};
+       vhost_traffic_status_bypass_stats on;
     }
 
     # xmpp websockets
@@ -124,6 +125,7 @@ server {
         proxy_busy_buffers_size  256k;
         proxy_set_header Connection "upgrade";
         tcp_nodelay on;
+       vhost_traffic_status_bypass_stats on;
     }
 
     # Enable websockets to bridges
@@ -138,7 +140,7 @@ server {
        proxy_connect_timeout   900s;
        proxy_send_timeout      900s;
        send_timeout            900s;
-#       vhost_traffic_status_bypass_stats on;
+       vhost_traffic_status_bypass_stats on;
     }
 
     location ~ ^/([^/?&:'"]+)$ {
@@ -171,7 +173,7 @@ server {
         set $prefix "$1";
 
         rewrite ^/(.*)$ /http-bind;
-#        vhost_traffic_status_bypass_stats on;
+        vhost_traffic_status_bypass_stats on;
     }
 
     # websockets for subdomains
@@ -181,7 +183,7 @@ server {
         set $prefix "$1";
 
         rewrite ^/(.*)$ /xmpp-websocket;
-#        vhost_traffic_status_bypass_stats on;
+        vhost_traffic_status_bypass_stats on;
     }
     ssl_certificate /etc/ssl/certs/{{ item }}.pem; # managed by Certbot
     ssl_certificate_key /etc/ssl/private/{{ item }}.key; # managed by Certbot

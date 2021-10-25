@@ -1,9 +1,4 @@
 ---
-
-##todo:
-# vts module for ningx
-# wasm filetype
-
 - name: Install prosody repository signing key
   apt_key:
     url: https://prosody.im/files/prosody-debian-packages.key
@@ -182,63 +177,82 @@
   notify:
     - reload nginx
 
-#- name: check if /var/log/nginx/vts.db exists
-#  stat: 
-#    path: /var/log/nginx/vts.db
-#  register: vts_db_exists 
-#
-#- name: touch /var/log/nginx/vts.db
-#  ansible.builtin.file:
-#    path: /var/log/nginx/vts.db
-#    state: touch
-#  when: vts_db_exists.stat.exists == False
-#
-#- name: chmod&chown /var/log/nginx/vts.db 
-#  ansible.builtin.file:
-#    path: /var/log/nginx/vts.db
-#    owner: www-data 
-#    group: adm
-#    state: file
-#    mode: '0644'
-#  when: vts_db_exists.stat.exists == True
-#
-#- name: Create modules directory for dynamic nginx modules
-#  ansible.builtin.file:
-#    path: /etc/nginx/modules
-#    state: directory
-#    owner: root
-#    group: adm
-#    mode: '0644'
-#
-#- name: copy nginx vhost traffic status module
-#  ansible.builtin.copy:
-#    src: files/ngx_http_vhost_traffic_status_module.so
-#    dest: /etc/nginx/modules/ngx_http_vhost_traffic_status_module.so
-#    owner: root
-#    group: adm
-#    mode: '0664'
-#    backup: yes
-#  notify:
-#    - reload nginx
-#
-#- name: generate /etc/nginx/sites-available/vts-module.conf
-#  template:
-#    src: nginx/etc/nginx/sites-available/vts-module.conf.j2
-#    dest: /etc/nginx/sites-available/vts-module.conf
-#    owner: root
-#    group: adm
-#    mode: "0664"
-#    backup: yes
-#  notify:
-#    - reload nginx
-#
-#- name: activate vts-module
-#  ansible.builtin.file:
-#    src: /etc/nginx/sites-available/vts-module.conf
-#    dest: /etc/nginx/sites-enabled/vts-module.conf
-#    state: link
-#  notify:
-#    - reload nginx
+- name: check if /var/log/nginx/vts.db exists
+  stat: 
+    path: /var/log/nginx/vts.db
+  register: vts_db_exists 
+
+- name: touch /var/log/nginx/vts.db
+  ansible.builtin.file:
+    path: /var/log/nginx/vts.db
+    state: touch
+  when: vts_db_exists.stat.exists == False
+
+- name: chmod&chown /var/log/nginx/vts.db 
+  ansible.builtin.file:
+    path: /var/log/nginx/vts.db
+    owner: www-data 
+    group: adm
+    state: file
+    mode: '0644'
+  when: vts_db_exists.stat.exists == True
+
+- name: Create modules directory for dynamic nginx modules
+  ansible.builtin.file:
+    path: /etc/nginx/modules
+    state: directory
+    owner: root
+    group: adm
+    mode: '0644'
+
+- name: copy nginx vhost traffic status module
+  ansible.builtin.copy:
+    src: files/ngx_http_vhost_traffic_status_module.so
+    dest: /etc/nginx/modules/ngx_http_vhost_traffic_status_module.so
+    owner: root
+    group: adm
+    mode: '0664'
+    backup: yes
+  notify:
+    - reload nginx
+
+- name: generate /etc/nginx/modules-available/vts.conf
+  template:
+    src: nginx/etc/nginx/modules-available/vts.conf.j2
+    dest: /etc/nginx/modules-available/vts.conf
+    owner: root
+    group: adm
+    mode: "0664"
+    backup: yes
+  notify:
+    - reload nginx
+
+- name: activate vts-module
+  ansible.builtin.file:
+    src: /etc/nginx/modules-available/vts.conf
+    dest: /etc/nginx/modules-enabled/vts.conf
+    state: link
+  notify:
+    - reload nginx
+
+- name: generate /etc/nginx/sites-available/vts-module.conf
+  template:
+    src: nginx/etc/nginx/sites-available/vts-module.conf.j2
+    dest: /etc/nginx/sites-available/vts-module.conf
+    owner: root
+    group: adm
+    mode: "0664"
+    backup: yes
+  notify:
+    - reload nginx
+
+- name: activate vts-module-site
+  ansible.builtin.file:
+    src: /etc/nginx/sites-available/vts-module.conf
+    dest: /etc/nginx/sites-enabled/vts-module.conf
+    state: link
+  notify:
+    - reload nginx
 
 - name: Set debconf-answers for jitsi-meet
   debconf:
