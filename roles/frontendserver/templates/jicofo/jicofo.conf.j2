@@ -1,4 +1,27 @@
 # Jicofo HOCON configuration. See /usr/share/jicofo/jicofo.jar/reference.conf for
 #available options, syntax, and default values.
 jicofo {
+  xmpp: {
+    client: {
+      client-proxy: focus.{{ shardName }}
+      conference-muc-jid = conference.{{ shardName }}
+      disable-certificate-verification = true
+    }
+    trusted-domains: [ "recorder.{{ shardName }}" ]
+  }
+  bridge: {
+    brewery-jid: "JvbBrewery@internal.auth.{{ shardName }}"
+    health-checks {
+        enabled = true
+        interval = 10 seconds
+    }
+    selection-strategy = {{ BridgeSelectionStrategy }}
+  }
+  octo {
+    enabled = false
+    id = 42
+  }
+  rest {
+    port = 9002
+  }
 }

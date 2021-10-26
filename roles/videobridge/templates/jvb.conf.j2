@@ -7,29 +7,20 @@ videobridge {
         xmpp-client {
             configs {
                 shard1 {
-                    hostname = "signal01.{{ dnsdomain }}"
-                    domain = "auth.open.jitsi"
+                    hostname = "signal01{{ dnsdomain }}"
+                    domain = "auth.shardopenjitsi"
                     username = "jvb"
                     password = "{{ prosody_user_jvb_password }}"
-                    muc_jids = "JvbBrewery@internal.auth.open.jitsi"
+                    muc_jids = "JvbBrewery@internal.auth.shardopenjitsi"
                     muc_nickname = "{{ hostname }}"
                     disable_certificate_verification = true
                 }
                 shard2 {
-                    hostname = "signal02.{{ dnsdomain }}"
-                    domain = "auth.open.jitsi"
+                    hostname = "signal02{{ dnsdomain }}"
+                    domain = "auth.shardopenjitsi"
                     username = "jvb"
                     password = "{{ prosody_user_jvb_password }}"
-                    muc_jids = "JvbBrewery@internal.auth.open.jitsi"
-                    muc_nickname = "{{ hostname }}"
-                    disable_certificate_verification = true
-                }
-                secureshard1 {
-                    hostname = "securesignal01.{{ dnsdomain }}"
-                    domain = "auth.closed.jitsi"
-                    username = "jvb"
-                    password = "{{ prosody_user_jvb_password }}"
-                    muc_jids = "JvbBrewery@internal.auth.closed.jitsi"
+                    muc_jids = "JvbBrewery@internal.auth.shardopenjitsi"
                     muc_nickname = "{{ hostname }}"
                     disable_certificate_verification = true
                 }

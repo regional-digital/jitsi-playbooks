@@ -1,11 +1,25 @@
 ---
-- hosts: all
-  gather_facts: false
+- hosts: debian
+  roles:
+    - common-debian
+  gather_facts: true
+  pre_tasks:
+    - setup:
+        filter: "ansible_distribution == 'Debian'"
+
+- hosts: debian
   roles:
     - common_ssh
+    - common
+  gather_facts: true
+  pre_tasks:
+    - setup:
+        filter: "ansible_distribution == 'Ubuntu'"
+
 - hosts: all
   gather_facts: true
   roles:
+#    - acme.sh
     - common
     - cronapt
 #    - telegraf
@@ -16,22 +30,20 @@
 #  roles:
 #    - rsnapshot_client
 
-- hosts: shardOpenJitsi:shardClosedJitsi
+- hosts: jitsi
   roles:
     - jitsicommon
+
+- hosts: jitsisignal
+  roles:
     - frontendserver
 
 - hosts: jitsisignal
   roles:
     - instances
 
-- hosts: jitsisignal
-  roles:
-    - instances-wwwroot
-
 - hosts: jitsivideobride
   roles:
-    - jitsicommon
     - videobridge
 
 - hosts: turnserver

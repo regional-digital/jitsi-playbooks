@@ -35,6 +35,6 @@ server {
     }
 {% endif %}
 
-    ssl_certificate /etc/letsencrypt/live/{{ fqdn }}/fullchain.pem; # managed by Certbot
-    ssl_certificate_key /etc/letsencrypt/live/{{ fqdn }}/privkey.pem; # managed by Certbot
+    ssl_certificate /etc/ssl/certs/{{ fqdn }}.pem;
+    ssl_certificate_key /etc/ssl/private/{{ fqdn }}.key;
 }

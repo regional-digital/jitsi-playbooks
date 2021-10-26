@@ -20,31 +20,22 @@
 -- for the server. Note that you must create the accounts separately
 -- (see https://prosody.im/doc/creating_accounts for info)
 -- Example: admins = { "user1@example.com", "user2@example.net" }
-admins = {  }
-
-component_interface = "0.0.0.0"
-interfaces = {"127.0.0.1", "{{ internal_interface }}"}
-https_ports = { }
-
-network_settings = {
-	read_timeout = 300;
-	tcp_backlog = 511;
-}
+admins = { }
 
 -- Enable use of libevent for better performance under high load
 -- For more information see: https://prosody.im/doc/libevent
-network_backend = "epoll"
 use_libevent = true
 
 -- Prosody will always look in its source directory for modules, but
 -- this option allows you to specify additional locations where Prosody
 -- will look for modules first. For community modules, see https://modules.prosody.im/
-plugin_paths = { "/var/www/jitsi-meet/prosody-plugins", "/usr/lib/prosody/modules" }
+--plugin_paths = {}
 
 -- This is the list of modules Prosody will load on startup.
 -- It looks for mod_modulename.lua in the plugins folder, so make sure that exists too.
 -- Documentation for bundled modules can be found at: https://prosody.im/doc/modules
 modules_enabled = {
+
 	-- Generally required
 		"roster"; -- Allow users to have a roster. Recommended ;)
 		"saslauth"; -- Authentication for clients and servers. Recommended if you want to log in.
@@ -59,7 +50,7 @@ modules_enabled = {
 		"blocklist"; -- Allow users to block communications with other users
 		"vcard4"; -- User profiles (stored in PEP)
 		"vcard_legacy"; -- Conversion between legacy vCard and PEP Avatar, vcard
-               -- "pinger"; -- Kick out idle users
+		"limits"; -- Enable bandwidth limiting for XMPP connections
 
 	-- Nice to have
 		"version"; -- Replies to server version requests
@@ -73,8 +64,6 @@ modules_enabled = {
 	-- Admin interfaces
 		"admin_adhoc"; -- Allows administration via an XMPP client that supports ad-hoc commands
 		--"admin_telnet"; -- Opens telnet console interface on localhost port 5582
-		-- "reload_components";
-		-- "reload_modules";
 
 	-- HTTP modules
 		--"bosh"; -- Enable BOSH clients, aka "Jabber over HTTP"
@@ -82,8 +71,6 @@ modules_enabled = {
 		--"http_files"; -- Serve static files from a directory over HTTP
 
 	-- Other specific functionality
-		"posix"; -- POSIX functionality, sends server to background, enables syslog, etc.
-		--"limits"; -- Enable bandwidth limiting for XMPP connections
 		--"groups"; -- Shared roster support
 		--"server_contact_info"; -- Publish contact information for this service
 		--"announce"; -- Send announcement to all online users
@@ -92,9 +79,6 @@ modules_enabled = {
 		--"motd"; -- Send a message to users when they log in
 		--"legacyauth"; -- Legacy authentication. Only used by some old clients and bots.
 		--"proxy65"; -- Enables a file transfer proxy service which clients behind NAT can use
-
-		"smacks"; --XEP-0198: Stream Management
-
 }
 
 -- These modules are auto-loaded, but should you want
@@ -103,33 +87,12 @@ modules_disabled = {
 	-- "offline"; -- Store offline messages
 	-- "c2s"; -- Handle client connections
 	-- "s2s"; -- Handle server-to-server connections
+	-- "posix"; -- POSIX functionality, sends server to background, enables syslog, etc.
 }
-
-smacks_max_unacked_stanzas = 5;
-smacks_hibernation_time = 60;
-smacks_max_hibernated_sessions = 1;
-smacks_max_old_sessions = 1;
-
-cross_domain_bosh = false;
-consider_bosh_secure = true;
-
-consider_websocket_secure = true
-cross_domain_websocket = true
 
 -- Disable account creation by default, for security
 -- For more information see https://prosody.im/doc/creating_accounts
 allow_registration = false
-
--- Debian:
---   send the server to background.
---
-daemonize = false;
-
--- Debian:
---   Please, don't change this option since /var/run/prosody/
---   is one of the few directories Prosody is allowed to write to
---
-pidfile = "/var/run/prosody/prosody.pid";
 
 -- Force clients to use encrypted connections? This option will
 -- prevent clients from authenticating unless they are using encryption.
@@ -138,16 +101,10 @@ c2s_require_encryption = true
 
 -- Force servers to use encrypted connections? This option will
 -- prevent servers from authenticating unless they are using encryption.
--- Note that this is different from authentication
 
 s2s_require_encryption = true
 
-
 -- Force certificate authentication for server-to-server connections?
--- This provides ideal security, but requires servers you communicate
--- with to support encryption AND present valid, trusted certificates.
--- NOTE: Your version of LuaSec must support certificate verification!
--- For more information see https://prosody.im/doc/s2s#security
 
 s2s_secure_auth = false
 
@@ -163,12 +120,22 @@ s2s_secure_auth = false
 
 --s2s_secure_domains = { "jabber.org" }
 
+-- Enable rate limits for incoming client and server connections
+
+limits = {
+  c2s = {
+    rate = "10kb/s";
+  };
+  s2sin = {
+    rate = "30kb/s";
+  };
+}
+
+-- Required for init scripts and prosodyctl
+pidfile = "/var/run/prosody/prosody.pid"
+
 -- Select the authentication backend to use. The 'internal' providers
 -- use Prosody's configured data storage to store the authentication data.
--- To allow Prosody to offer secure authentication mechanisms to clients, the
--- default provider stores passwords in plaintext. If you do not trust your
--- server please see https://prosody.im/doc/modules/mod_auth_internal_hashed
--- for information about using the hashed backend.
 
 authentication = "internal_hashed"
 
@@ -191,20 +158,15 @@ authentication = "internal_hashed"
 -- they are offline. This setting controls how long Prosody will keep
 -- messages in the archive before removing them.
 
-archive_expires_after = "10s" -- Remove archived messages after 10 seconds
+archive_expires_after = "1w" -- Remove archived messages after 1 week
 
 -- You can also configure messages to be stored in-memory only. For more
 -- archiving options, see https://prosody.im/doc/modules/mod_mam
 
 -- Logging configuration
 -- For advanced logging see https://prosody.im/doc/logging
---
--- Debian:
---  Logs info and higher to /var/log
---  Logs errors to syslog also
 log = {
-	-- Log files (change 'info' to 'debug' for debug logs):
-	info = "/var/log/prosody/prosody.log";
+	debug = "/var/log/prosody/prosody.log"; -- Change 'info' to 'debug' for verbose logging
 	error = "/var/log/prosody/prosody.err";
 	-- "*syslog"; -- Uncomment this for logging to syslog
 	-- "*console"; -- Log to the console, useful for debugging with daemonize=false
@@ -231,6 +193,8 @@ certificates = "certs"
 -- You need to add a VirtualHost entry for each domain you wish Prosody to serve.
 -- Settings under each VirtualHost entry apply *only* to that host.
 
+--VirtualHost "localhost"
+
 --VirtualHost "example.com"
 --	certificate = "/path/to/example.crt"
 
@@ -252,10 +216,5 @@ certificates = "certs"
 --
 --Component "gateway.example.com"
 --	component_secret = "password"
-
------- Additional config files ------
--- For organizational purposes you may prefer to add VirtualHost and
--- Component definitions in their own config files. This line includes
--- all config files in /etc/prosody/conf.d/
 
 Include "conf.d/*.cfg.lua"

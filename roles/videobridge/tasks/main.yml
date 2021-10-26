@@ -6,7 +6,7 @@
     value: "{{ item.value }}"
     vtype: "{{ item.vtype }}"
   loop:
-    - { name: 'jitsi-videobridge', question: 'jitsi-videobridge/jvb-hostname', value: 'open.jitsi', vtype: 'string' }
+    - { name: 'jitsi-videobridge', question: 'jitsi-videobridge/jvb-hostname', value: '{{ hostname }}', vtype: 'string' }
 
 - name: install stuff
   apt:

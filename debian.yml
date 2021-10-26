@@ -1,18 +1,14 @@
----
-- hosts: all
-  roles:
-    - common-debian
-    - acme.sh
 
-- hosts: jitsisignal
-  roles:
-    - frontendserver-debian
-    - instances-debian
 
-- hosts: turnserver
-  roles:
-    - turnserver-debian
+#- hosts: jitsisignal
+#  roles:
+#    - frontendserver
+#    - instances-debian
 
-- hosts: videobridge
-  roles:
-    - videobridge-debian
+#- hosts: turnserver
+#  roles:
+#    - turnserver
+
+#- hosts: videobridge
+#  roles:
+#    - videobridge

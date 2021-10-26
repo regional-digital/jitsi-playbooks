@@ -87,3 +87,11 @@
     block: |
       127.0.0.1 localhost.localdomain localhost {{ inventory_hostname  }} {{ fqdn  }}
     backup: yes
+
+- name: create folder for packages
+  file:
+    path: /opt/ansiblepackages
+    state: directory
+    owner: root
+    group: root
+    mode: '0600'
