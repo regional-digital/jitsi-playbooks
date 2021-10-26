@@ -1,4 +1,9 @@
 ---
+- name: Install Jitsi Repo signing key
+  apt_key:
+    url: https://download.jitsi.org/jitsi-key.gpg.key 
+    state: present
+
 - name: Set debconf-answers for jitsi-meet
   debconf:
     name: "{{ item.name }}"
@@ -16,7 +21,7 @@
 - name: Copy Jitsi Package to host
   ansible.builtin.copy:
     src: files/{{ item }}
-    dest: "/opt/jitispackages/{{ item }}"
+    dest: "/opt/ansiblepackages/{{ item }}"
     owner: root
     group: root
     mode: '0600'
@@ -26,7 +31,7 @@
 
 - name: Install Jitsi Packages
   apt:
-    deb: "/opt/jitispackages/{{ item }}"
+    deb: "/opt/ansiblepackages/{{ item }}"
   with_items:
     - jitsi-videobridge2_2.1-570-gb802be83-1_all.deb
 

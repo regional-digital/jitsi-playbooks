@@ -6,24 +6,19 @@ videobridge {
         }
         xmpp-client {
             configs {
-                shard1 {
-                    hostname = "signal01{{ dnsdomain }}"
-                    domain = "auth.shardopenjitsi"
+{% for prosodyDomain in prosodyDomains %}
+{% for signalserverhostname in groups[prosodyDomain] %}
+                shard-{{ prosodyDomain }}-{{ signalserverhostname }} {
+                    hostname = "{{ signalserverhostname }}"
+                    domain = "auth.{{ prosodyDomain }}"
                     username = "jvb"
                     password = "{{ prosody_user_jvb_password }}"
-                    muc_jids = "JvbBrewery@internal.auth.shardopenjitsi"
+                    muc_jids = "JvbBrewery@internal.auth.{{ prosodyDomain }}"
                     muc_nickname = "{{ hostname }}"
                     disable_certificate_verification = true
                 }
-                shard2 {
-                    hostname = "signal02{{ dnsdomain }}"
-                    domain = "auth.shardopenjitsi"
-                    username = "jvb"
-                    password = "{{ prosody_user_jvb_password }}"
-                    muc_jids = "JvbBrewery@internal.auth.shardopenjitsi"
-                    muc_nickname = "{{ hostname }}"
-                    disable_certificate_verification = true
-                }
+{% endfor %}
+{% endfor %}
             }
         }
     }
@@ -32,24 +27,31 @@ videobridge {
             host = "0.0.0.0"
             port = "9000"
         }
-        public {
+       public {
             port = "9090"
-        }
+         }
     }
     octo {
         enabled = true
         bind-address = "{{ internal_interface }}"
         bind-port = "4096"
-        region = "BW"
+        region = "{{ userRegion }}"
     }
     rest {
         shutdown {
             enabled = true
         }
     }
+    stats {
+        enabled = true
+        interval = 10 seconds
+        transports = [
+            { type = "muc" }
+        ]
+    }
     websockets {
         enabled = true
-        domain = "{{ frontenddnsname }}:443"
+        domain = "{{ hostname }}:443"
         server-id = "{{ hostname }}"
         tls = true
     }
