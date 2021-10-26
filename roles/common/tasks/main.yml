@@ -1,7 +1,7 @@
 ---
 - name: Set a hostname
   hostname:
-    name: "{{ fqdn }}"
+    name: "{{ hostname }}"
 
 - name: Install system tools and utilities
   apt:
@@ -85,7 +85,7 @@
     path: /etc/hosts
     marker: "## {mark} ANSIBLE MANAGED BLOCK 2 ##"
     block: |
-      127.0.0.1 localhost.localdomain localhost {{ inventory_hostname  }} {{ fqdn  }}
+      127.0.0.1 localhost.localdomain localhost {{ fqdn  }} {{ hostname  }} 
     backup: yes
 
 - name: create folder for packages
