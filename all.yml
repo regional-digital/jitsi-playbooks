@@ -31,7 +31,7 @@
 #  roles:
 #    - instances
 
-- hosts: jitsivideobride
+- hosts: videobridge
   roles:
     - videobridge
 
