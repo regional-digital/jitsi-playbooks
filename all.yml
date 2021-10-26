@@ -2,25 +2,16 @@
 - hosts: debian
   roles:
     - common-debian
-  gather_facts: true
-  pre_tasks:
-    - setup:
-        filter: "ansible_distribution == 'Debian'"
 
-- hosts: debian
+- hosts: ubuntu
   roles:
     - common_ssh
     - common
-  gather_facts: true
-  pre_tasks:
-    - setup:
-        filter: "ansible_distribution == 'Ubuntu'"
 
 - hosts: all
   gather_facts: true
   roles:
-#    - acme.sh
-    - common
+    - acme.sh
     - cronapt
 #    - telegraf
 #    - nagios_agent
@@ -30,17 +21,13 @@
 #  roles:
 #    - rsnapshot_client
 
-- hosts: jitsi
-  roles:
-    - jitsicommon
-
 - hosts: jitsisignal
   roles:
     - frontendserver
 
-- hosts: jitsisignal
-  roles:
-    - instances
+#- hosts: jitsisignal
+#  roles:
+#    - instances
 
 - hosts: jitsivideobride
   roles:
