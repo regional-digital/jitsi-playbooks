@@ -90,13 +90,13 @@
   when: letsencrypt_cert_exists.stat.exists == False and cert_exists_local.stat.exists == True
 
 - name: Create letsencrypt certificate for {{ instance }}
-  shell: /root/.acme.sh/acme.sh --issue -w /var/www/acme -m {{ letsencrypt_email }} -d {{ deployto | default(instance) }} --fullchain-file /etc/ssl/certs/{{ instance }}.pem --key-file /etc/ssl/private/{{ instance }}.key --reloadcmd "systemctl restart nginx" {{ acme_sh_additional_options | default('') }}
+  shell: /root/.acme.sh/acme.sh --issue -w /var/www/acme -d {{ deployto | default(instance) }} --fullchain-file /etc/ssl/certs/{{ instance }}.pem --key-file /etc/ssl/private/{{ instance }}.key --reloadcmd "systemctl restart nginx" {{ acme_sh_additional_options | default('') }}
   args:
     creates: /etc/ssl/certs/{{ deployto | default(instance) }}.pem
   when: letsencrypt_cert_exists.stat.exists == False and cert_exists_local.stat.exists == False and instancevars[instance].certbotDomainString is not defined
 
 - name: Create letsencrypt certificate for {{ instance }} with multiple domains
-  shell: /root/.acme.sh/acme.sh --issue -w /var/www/acme -m {{ letsencrypt_email }} -d {{ deployto | default(instancevars[instance].certbotDomainString) }} --fullchain-file /etc/ssl/certs/{{ instance }}.pem --key-file /etc/ssl/private/{{ instance }}.key --reloadcmd "systemctl restart nginx" {{ acme_sh_additional_options | default('') }}
+  shell: /root/.acme.sh/acme.sh --issue -w /var/www/acme -d {{ deployto | default(instancevars[instance].certbotDomainString) }} --fullchain-file /etc/ssl/certs/{{ instance }}.pem --key-file /etc/ssl/private/{{ instance }}.key --reloadcmd "systemctl restart nginx" {{ acme_sh_additional_options | default('') }}
   args:
     creates: /etc/ssl/certs/{{ deployto | default(instance) }}.pem
   when: letsencrypt_cert_exists.stat.exists == False and cert_exists_local.stat.exists == False and instancevars[instance].certbotDomainString is defined

@@ -132,7 +132,7 @@
   meta: flush_handlers
 
 - name: Create certificate for signaling-server
-  shell: /root/.acme.sh/acme.sh --issue -w /var/www/acme -m {{ letsencrypt_email }} -d {{ fqdn }} --fullchain-file /etc/ssl/certs/{{ fqdn }}.pem --key-file /etc/ssl/private/{{ fqdn }}.key --reloadcmd "systemctl restart nginx" {{ acme_sh_additional_options | default('') }}
+  shell: /root/.acme.sh/acme.sh --issue -w /var/www/acme -d {{ fqdn }} --fullchain-file /etc/ssl/certs/{{ fqdn }}.pem --key-file /etc/ssl/private/{{ fqdn }}.key --reloadcmd "systemctl restart nginx" {{ acme_sh_additional_options | default('') }}
   args:
     creates: /etc/letsencrypt/live/{{ fqdn }}
   when: cert_exists.stat.exists == False and cert_exists_local.stat.exists == False

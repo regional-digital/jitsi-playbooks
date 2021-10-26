@@ -5,16 +5,6 @@
       - vlan
     update_cache: yes
 
-- name: generate /etc/sysctl.d/30-disable-ipv6.conf (disable IPv6)
-  template:
-    src: 30-disable-ipv6.conf.j2
-    dest: /etc/sysctl.d/30-disable-ipv6.conf
-    owner: root
-    group: root
-    mode: "0644"
-  notify:
-    - systemctl apply
-
 - name: generate /etc/network/interfaces.d/99_vlan_{{ privateVLANID }}.conf
   template:
     src: 99_vlan.conf.j2

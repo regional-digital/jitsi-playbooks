@@ -1,5 +1,6 @@
 ---
 - hosts: all
+  gather_facts: False
   roles:
     - common
 
@@ -26,10 +27,7 @@
 - hosts: jitsisignal
   roles:
     - frontendserver
-
-#- hosts: jitsisignal
-#  roles:
-#    - instances
+    - instances
 
 - hosts: videobridge
   roles:
