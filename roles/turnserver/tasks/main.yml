@@ -8,7 +8,7 @@
       - coturn
 
 - name: create certificate
-  shell: /root/.acme.sh/acme.sh --issue --domain {{ turnservername }} --key-file /etc/ssl/private/{{ turnservername }}.key --fullchain-file /etc/ssl/certs/{{ turnservername }}.pem --reloadcmd "systemctl restart coturn" --email {{ letsencrypt_email }} --insecure --standalone --listen-v4 {{ acme_sh_additional_options | default('') }} --force
+  shell: /root/.acme.sh/acme.sh --issue --domain {{ turnservername }} --key-file /etc/ssl/private/{{ turnservername }}.key --fullchain-file /etc/ssl/certs/{{ turnservername }}.pem --reloadcmd "systemctl restart coturn" --standalone --listen-v4 {{ acme_sh_additional_options | default('') }} --force
   args:
     warn: false
     creates: /etc/ssl/certs/{{ turnservername }}.pem
