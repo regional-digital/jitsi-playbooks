@@ -1,15 +1,17 @@
 ---
+- hosts: all
+  roles:
+    - common
+
 - hosts: debian
   roles:
     - common-debian
 
 - hosts: ubuntu
   roles:
-    - common_ssh
-    - common
+    - common-ubuntu
 
 - hosts: all
-  gather_facts: true
   roles:
     - acme.sh
     - cronapt

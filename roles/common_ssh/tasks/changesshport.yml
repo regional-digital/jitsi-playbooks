@@ -1,8 +1,0 @@
----
-- name: Set configured port fact
-  set_fact:
-    configured_port: "{{ ansible_port }}"
-
-- name: Set inventory ansible_port to default
-  set_fact:
-    ansible_port: "22"

@@ -1,4 +1,35 @@
 ---
+- name: check if ssh on defined port running
+  wait_for:
+    port: "{{ ssh_port }}"
+    state: "started"
+    host: "{{ inventory_hostname }}"
+    connect_timeout: "5"
+    timeout: "10"
+  delegate_to: "localhost"
+  ignore_errors: "yes"
+  register: final_ssh
+
+- name: Set configured port fact
+  set_fact:
+    configured_port: "{{ ansible_port }}"
+  when: final_ssh is defined and final_ssh.failed == True
+
+- name: Set inventory ansible_port to default
+  set_fact:
+    ansible_port: "22"
+  when: final_ssh is defined and final_ssh.failed == True
+
+- name: generate /etc/ssh/sshd_config
+  template:
+    src: sshd_config.j2
+    dest: /etc/ssh/sshd_config
+    owner: root
+    group: root
+    mode: "0644"
+  notify:
+    - restart sshd
+
 - name: Set a hostname
   hostname:
     name: "{{ hostname }}"
@@ -9,7 +40,7 @@
       - sudo
       - wget
       - curl
-      - python-apt
+      - python-apt-common
       - apt-transport-https
       - gpg
       - gpg-agent
@@ -28,10 +59,10 @@
     creates: /home/{{ item }}
   with_items: "{{ users }}"
 
-- name: adding existing users to groups sudo and adm
+- name: adding existing users to groups sudo
   user:
     name: '{{ item }}'
-    groups: sudo,adm
+    groups: sudo
     append: yes
   with_items: "{{ users }}"
 
@@ -61,17 +92,6 @@
   notify:
     - systemctl apply
 
-- name: generate /etc/netplan/99_vlan.yaml
-  template:
-    src: 99_vlan.yaml.j2
-    dest: /etc/netplan/99_vlan.yaml
-    owner: root
-    group: root
-    mode: "0644"
-  when: private_vlan_ip is defined
-  notify:
-    - netplan apply
-
 - name: edit hosts 1
   blockinfile:
     path: /etc/hosts
@@ -85,7 +105,7 @@
     path: /etc/hosts
     marker: "## {mark} ANSIBLE MANAGED BLOCK 2 ##"
     block: |
-      127.0.0.1 localhost.localdomain localhost {{ fqdn  }} {{ hostname  }} 
+      127.0.0.1 localhost.localdomain localhost {{ inventory_hostname  }} {{ fqdn  }}
     backup: yes
 
 - name: create folder for packages
