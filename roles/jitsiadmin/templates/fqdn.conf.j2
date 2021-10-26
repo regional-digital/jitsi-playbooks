@@ -1,0 +1,14 @@
+<VirtualHost *:80>
+    ServerName {{ fqdn }}
+	Alias /.well-known/acme-challenge/ /var/www/acme/.well-known/acme-challenge/
+    <Directory "/var/www/acme/.well-known/acme-challenge/">
+        Options None
+        AllowOverride None
+        ForceType text/plain
+        #RedirectMatch 404 "^(?!/\.well-known/acme-challenge/[\w-]{43}$)"
+    </Directory>
+    RewriteEngine On
+    RewriteCond %{REQUEST_URI} !^/.well-known/acme-challenge [NC]
+	RewriteCond %{HTTPS} off
+	RewriteRule (.*) https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
+</VirtualHost>

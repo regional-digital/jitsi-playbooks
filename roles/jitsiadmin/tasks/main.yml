@@ -1,0 +1,108 @@
+---
+- name: install stuff
+  apt:
+    name:
+      - apache2
+      - php
+
+- name: create directory for acme-stuff /var/www/acme
+  ansible.builtin.file:
+    path: /var/www/acme
+    state: directory
+    owner: www-data
+    group: www-data
+    mode: '0755'
+
+- name: enable apache module rewrite
+  command: a2enmod rewrite
+  args:
+    creates: /etc/apache2/mods-enabled/rewrite.load
+  notify:
+    reload apache2
+
+- name: enable apache module headers
+  command: a2enmod headers
+  args:
+    creates: /etc/apache2/mods-enabled/headers.load
+  notify:
+    reload apache2
+
+- name: generate /etc/apache2/sites-available/{{ fqdn }}.conf
+  template:
+    src: fqdn.conf.j2
+    dest: /etc/apache2/sites-available/{{ fqdn }}.conf
+    owner: root
+    group: root
+    mode: "0644"
+    backup: yes
+  notify:
+    - reload apache2
+
+- name: activate default-site (needed for getting letsencrypt-certs)
+  ansible.builtin.file:
+    src: /etc/apache2/sites-available/{{ fqdn }}.conf
+    dest: /etc/apache2/sites-enabled/{{ fqdn }}.conf
+    state: link
+  notify:
+    - reload apache2
+    
+- name: Flush handlers
+  meta: flush_handlers
+
+- name: Create certificate for signaling-server
+  shell: /root/.acme.sh/acme.sh --issue -w /var/www/acme -d {{ fqdn }} --fullchain-file /etc/ssl/certs/{{ fqdn }}.pem --key-file /etc/ssl/private/{{ fqdn }}.key --reloadcmd "systemctl reload apache2" {{ acme_sh_additional_options | default('') }}
+  args:
+    creates: /etc/ssl/certs/{{ fqdn }}.pem
+
+- name: enable apache module ssl
+  command: a2enmod ssl
+  args:
+    creates: /etc/apache2/mods-enabled/ssl.load
+  notify:
+    reload apache2
+
+- name: generate /etc/apache2/sites-available/{{ fqdn }}-ssl.conf
+  template:
+    src: fqdn-ssl.conf.j2
+    dest: /etc/apache2/sites-available/{{ fqdn }}-ssl.conf
+    owner: root
+    group: root
+    mode: "0644"
+    backup: yes
+  notify:
+    - reload apache2
+
+- name: activate  /etc/apache2/sites-available/{{ fqdn }}-ssl.conf
+  ansible.builtin.file:
+    src: /etc/apache2/sites-available/{{ fqdn }}-ssl.conf
+    dest: /etc/apache2/sites-enabled/{{ fqdn }}-ssl.conf
+    state: link
+  notify:
+    - reload apache2
+
+- name: generate /etc/apache2/conf-available/ssl.conf
+  template:
+    src: fqdn-ssl.conf.j2
+    dest: /etc/apache2/conf-available/ssl.conf
+    owner: root
+    group: root
+    mode: "0644"
+    backup: yes
+  notify:
+    - reload apache2
+
+- name: activate  /etc/apache2/conf-available/ssl.conf
+  ansible.builtin.file:
+    src: /etc/apache2/conf-available/ssl.conf
+    dest: /etc/apache2/conf-enabled/ssl.conf
+    state: link
+  notify:
+    - reload apache2
+
+
+#check out git
+
+#expect-answers
+
+#install
+

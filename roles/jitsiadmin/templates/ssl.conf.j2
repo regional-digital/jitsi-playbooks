@@ -1,0 +1,10 @@
+<IfModule mod_ssl.c>
+	# modern configuration
+	SSLProtocol             all -SSLv3 -TLSv1 -TLSv1.1 -TLSv1.2
+	SSLHonorCipherOrder     off
+	SSLSessionTickets       off
+
+	SSLUseStapling On
+	SSLStaplingCache "shmcb:logs/ssl_stapling(32768)"
+
+</IfModule>
