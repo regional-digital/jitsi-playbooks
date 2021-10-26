@@ -247,7 +247,7 @@ static-auth-secret={{ turncredentials_secret }}
 # the oAuth authentication purposes.
 # The default value is the realm name.
 #
-server-name={{ hostname }}{{ dnsdomain | default('') }}
+server-name={{ fqdn }}
 
 # Flag that allows oAuth authentication.
 #
@@ -355,7 +355,7 @@ server-name={{ hostname }}{{ dnsdomain | default('') }}
 # Note: If the default realm is not specified, then realm falls back to the host domain name.
 #       If the domain name string is empty, or set to '(None)', then it is initialized as an empty string.
 #
-realm={{ hostname }}{{ dnsdomain | default('') }}
+realm={{ fqdn }}
 
 # This flag sets the origin consistency
 # check. Across the session, all requests must have the same
