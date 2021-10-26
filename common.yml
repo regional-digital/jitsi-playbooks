@@ -1,0 +1,9 @@
+---
+- hosts: debian
+  roles:
+    - common-debian
+
+- hosts: ubuntu
+  roles:
+    - common_ssh
+    - common
