@@ -1,5 +1,4 @@
 ---
-- hosts: shardOpenJitsi:shardClosedJitsi
+- hosts: jitsisignal
   roles:
-    - jitsicommon
     - frontendserver
