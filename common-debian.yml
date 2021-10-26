@@ -1,6 +1,0 @@
----
-- hosts: all
-  roles:
-    - common-debian
-    - acme.sh
-

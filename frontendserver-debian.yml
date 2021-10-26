@@ -1,4 +1,0 @@
----
-- hosts: jitsisignal
-  roles:
-    - frontendserver-debian

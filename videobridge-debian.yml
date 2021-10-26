@@ -1,4 +1,0 @@
----
-- hosts: videobridge
-  roles:
-    - videobridge-debian
