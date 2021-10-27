@@ -119,7 +119,7 @@
 
 - name: set usedWebVersion to match path
   set_fact:
-    usedWebVersion: ""
+    usedWebVersion: "-{{ defaultWebVersion }}"
   when: instanceVars.usedWebVersion is not defined
 
 - name: generate meet-config file for instance {{ instance }} from template
