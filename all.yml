@@ -3,6 +3,10 @@
   gather_facts: False
   roles:
     - common
+    - acme.sh
+    - cronapt
+#    - telegraf
+#    - nagios_agent
 
 - hosts: debian
   roles:
@@ -11,13 +15,6 @@
 - hosts: ubuntu
   roles:
     - common-ubuntu
-
-- hosts: all
-  roles:
-    - acme.sh
-    - cronapt
-#    - telegraf
-#    - nagios_agent
 
 #- hosts: rsnapshot_client
 #  gather_facts: true

@@ -4,6 +4,17 @@
     name:
       - apache2
       - php
+#      - mariadb-server
+      - libapache2-mod-php
+      - npm
+      - php-mbstring
+      - php-xsl
+      - php-dom
+      - php-xml
+      - php-gd
+      - php-zip
+      - php-sqlite3
+      - php-intl
 
 - name: create directory for acme-stuff /var/www/acme
   ansible.builtin.file:
@@ -103,6 +114,7 @@
 #check out git
 
 #expect-answers
+#sqlite3:////var/www/html/database.sqlite3?mode=0666
 
 #install
 
