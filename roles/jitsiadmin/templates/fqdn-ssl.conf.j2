@@ -2,15 +2,21 @@
 	<VirtualHost _default_:443>
 		ServerAdmin webmaster@localhost
 
-		DocumentRoot /var/www/{{ fqdn }}
+		DocumentRoot /var/www/html/{{ jitsiadmin_fqdn }}/public
+		<Directory /var/www/html/>
+			Options FollowSymLinks
+			AllowOverride All
+			Order Allow,Deny
+			Allow from All
+		</Directory>
 
-		ErrorLog ${APACHE_LOG_DIR}/{{ fqdn }}_error.log
-		CustomLog ${APACHE_LOG_DIR}/{{ fqdn }}_access.log combined
+		ErrorLog ${APACHE_LOG_DIR}/{{ jitsiadmin_fqdn }}_error.log
+		CustomLog ${APACHE_LOG_DIR}/{{ jitsiadmin_fqdn }}_access.log combined
 
 		SSLEngine on
 
-		SSLCertificateFile	/etc/ssl/certs/{{ fqdn }}.pem
-		SSLCertificateKeyFile /etc/ssl/private/{{ fqdn }}.key
+		SSLCertificateFile	/etc/ssl/certs/{{ jitsiadmin_fqdn }}.pem
+		SSLCertificateKeyFile /etc/ssl/private/{{ jitsiadmin_fqdn }}.key
 
 		<FilesMatch "\.(cgi|shtml|phtml|php)$">
 				SSLOptions +StdEnvVars

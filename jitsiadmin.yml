@@ -1,3 +1,3 @@
-- hosts: jitsiadmin
+- hosts: jitsi-admin
   roles:
     - jitsiadmin
