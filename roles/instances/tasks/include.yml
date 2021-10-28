@@ -150,3 +150,16 @@
     group: www-data
     mode: '0755'
 
+- name: check if interface_config.js exists in instance-dir on ansible host
+  local_action: stat path=files/jitsi-www/instances/{{ instance }}/wwwroot/interface_config.js
+  register: interface_config_exists_local
+
+- name: generate meet-config file for instance {{ instance }} from template
+  template:
+    src: interface_config{{ usedWebVersion }}.js.j2
+    dest: /var/www/jitsi-meet-{{ deployto | default(instance) }}/interface_config.js
+    owner: www-data
+    group: www-data
+    mode: '0775'
+    backup: yes
+  when: interface_config_exists_local.stat.exists == False
