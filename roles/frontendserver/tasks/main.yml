@@ -15,9 +15,8 @@
       - default-jre-headless
       - python3-pexpect
       - liblua5.2-dev
-      - prosody
 
-- name: Copy Jitsi Package to host
+- name: Copy Jitsi Packages to host
   ansible.builtin.copy:
     src: files/{{ item }}
     dest: "/opt/ansiblepackages/{{ item }}"
@@ -31,8 +30,30 @@
     - jitsi-meet-tokens_1.0.5415-1_all.deb
     - jitsi-meet-web_1.0.5415-1_all.deb
     - jitsi-meet-web-config_1.0.5415-1_all.deb
-  notify:
-    - reload systemd
+
+- name: Copy Prosody Package to Ubuntu-host
+  ansible.builtin.copy:
+    src: files/{{ item }}
+    dest: "/opt/ansiblepackages/{{ item }}"
+    owner: root
+    group: root
+    mode: '0600'
+    backup: yes
+  with_items:
+    - prosody_0.11.10-1~focal1_amd64.deb
+  when: "'ubuntu' in group_names"
+
+- name: Copy Prosody Package to Debian-host
+  ansible.builtin.copy:
+    src: files/{{ item }}
+    dest: "/opt/ansiblepackages/{{ item }}"
+    owner: root
+    group: root
+    mode: '0600'
+    backup: yes
+  with_items:
+    - prosody_0.11.10-1~bullseye1_amd64.deb
+  when: "'debian' in group_names"
 
 #first care about nginx
 - name: /etc/nginx/nginx.conf
@@ -291,6 +312,20 @@
     - jitsi-meet-tokens_1.0.5415-1_all.deb
     - jitsi-meet-web_1.0.5415-1_all.deb
     - jitsi-meet-web-config_1.0.5415-1_all.deb
+
+- name: Install Prosody Package on Ubuntu
+  apt:
+    deb: "/opt/ansiblepackages/{{ item }}"
+  with_items:
+    - prosody_0.11.10-1~focal1_amd64.deb
+  when: "'ubuntu' in group_names"
+
+- name: Install Prosody Package on Debian
+  apt:
+    deb: "/opt/ansiblepackages/{{ item }}"
+  with_items:
+    - prosody_0.11.10-1~bullseye1_amd64.deb
+  when: "'debian' in group_names"
 
 - name: create /etc/systemd/system/prosody.service.d
   file:
