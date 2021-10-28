@@ -9,7 +9,7 @@
  */
 
 var interfaceConfig = {
-    APP_NAME: 'Jitsi Meet',
+    APP_NAME: '{{ instanceVars.APP_NAME }}',
     AUDIO_LEVEL_PRIMARY_COLOR: 'rgba(255,255,255,0.4)',
     AUDIO_LEVEL_SECONDARY_COLOR: 'rgba(255,255,255,0.2)',
 
@@ -22,15 +22,15 @@ var interfaceConfig = {
      * Note: this mode is experimental and subject to breakage.
      */
     AUTO_PIN_LATEST_SCREEN_SHARE: 'remote-only',
-    BRAND_WATERMARK_LINK: '',
+    BRAND_WATERMARK_LINK: '{{ instanceVars.BRAND_WATERMARK_LINK }}',
 
     CLOSE_PAGE_GUEST_HINT: false, // A html text to be shown to guests on the close page, false disables it
 
-    DEFAULT_BACKGROUND: '#474747',
-    DEFAULT_LOCAL_DISPLAY_NAME: 'me',
-    DEFAULT_LOGO_URL: 'images/watermark.svg',
-    DEFAULT_REMOTE_DISPLAY_NAME: 'Fellow Jitster',
-    DEFAULT_WELCOME_PAGE_LOGO_URL: 'images/watermark.svg',
+    DEFAULT_BACKGROUND: '{{ instanceVars.DEFAULT_BACKGROUND }}',
+    DEFAULT_LOCAL_DISPLAY_NAME: '{{ instanceVars.DEFAULT_LOCAL_DISPLAY_NAME }}',
+    DEFAULT_LOGO_URL: '{{ instanceVars.DEFAULT_LOGO_URL }}',
+    DEFAULT_REMOTE_DISPLAY_NAME: '{{ instanceVars.DEFAULT_REMOTE_DISPLAY_NAME }}',
+    DEFAULT_WELCOME_PAGE_LOGO_URL: '{{ instanceVars.DEFAULT_WELCOME_PAGE_LOGO_URL }}',
 
     DISABLE_DOMINANT_SPEAKER_INDICATOR: false,
 
@@ -67,17 +67,17 @@ var interfaceConfig = {
     DISABLE_VIDEO_BACKGROUND: false,
 
     DISPLAY_WELCOME_FOOTER: true,
-    DISPLAY_WELCOME_PAGE_ADDITIONAL_CARD: false,
-    DISPLAY_WELCOME_PAGE_CONTENT: false,
-    DISPLAY_WELCOME_PAGE_TOOLBAR_ADDITIONAL_CONTENT: false,
+    DISPLAY_WELCOME_PAGE_ADDITIONAL_CARD: {{ instanceVars.DISPLAY_WELCOME_PAGE_ADDITIONAL_CARD }},
+    DISPLAY_WELCOME_PAGE_CONTENT: {{ instanceVars.DISPLAY_WELCOME_PAGE_CONTENT }},
+    DISPLAY_WELCOME_PAGE_TOOLBAR_ADDITIONAL_CONTENT: {{ instanceVars.DISPLAY_WELCOME_PAGE_TOOLBAR_ADDITIONAL_CONTENT }},
 
-    ENABLE_DIAL_OUT: true,
+    ENABLE_DIAL_OUT: {{ instanceVars.ENABLE_DIAL_OUT }},
 
     ENABLE_FEEDBACK_ANIMATION: false, // Enables feedback star animation.
 
     FILM_STRIP_MAX_HEIGHT: 120,
 
-    GENERATE_ROOMNAMES_ON_WELCOME_PAGE: true,
+    GENERATE_ROOMNAMES_ON_WELCOME_PAGE: {{ instanceVars.GENERATE_ROOMNAMES_ON_WELCOME_PAGE }},
 
     /**
      * Hide the logo on the deep linking pages.
@@ -89,7 +89,7 @@ var interfaceConfig = {
      */
     HIDE_INVITE_MORE_HEADER: false,
 
-    JITSI_WATERMARK_LINK: 'https://jitsi.org',
+    JITSI_WATERMARK_LINK: '{{ instanceVars.JITSI_WATERMARK_LINK }}',
 
     LANG_DETECTION: true, // Allow i18n to detect the system language
     LIVE_STREAMING_HELP_LINK: 'https://jitsi.org/live', // Documentation reference for the live streaming feature.
@@ -127,7 +127,7 @@ var interfaceConfig = {
      */
     MOBILE_DOWNLOAD_LINK_IOS: 'https://itunes.apple.com/us/app/jitsi-meet/id1165103905',
 
-    NATIVE_APP_NAME: 'Jitsi Meet',
+    NATIVE_APP_NAME: '{{ instanceVars.NATIVE_APP_NAME }}',
 
     // Names of browsers which should show a warning stating the current browser
     // has a suboptimal experience. Browsers which are not listed as optimal or
@@ -136,7 +136,7 @@ var interfaceConfig = {
     OPTIMAL_BROWSERS: [ 'chrome', 'chromium', 'firefox', 'nwjs', 'electron', 'safari' ],
 
     POLICY_LOGO: null,
-    PROVIDER_NAME: 'Jitsi',
+    PROVIDER_NAME: '{{ instanceVars.PROVIDER_NAME }}',
 
     /**
      * If true, will display recent list
@@ -172,7 +172,7 @@ var interfaceConfig = {
      * If indicated some of the error dialogs may point to the support URL for
      * help.
      */
-    SUPPORT_URL: 'https://community.jitsi.org/',
+    SUPPORT_URL: '{{ instanceVars.SUPPORT_URL }}',
 
     // Browsers, in addition to those which do not fully support WebRTC, that
     // are not supported and should show the unsupported browser page.
@@ -269,3 +269,4 @@ var interfaceConfig = {
 };
 
 /* eslint-enable no-unused-vars, no-var, max-len */
+{{ instanceVars.interfaceConfig_foot | default('') }}
