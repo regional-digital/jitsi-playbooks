@@ -1,6 +1,15 @@
 # Jicofo HOCON configuration. See /usr/share/jicofo/jicofo.jar/reference.conf for
 #available options, syntax, and default values.
 jicofo {
+{% if authentication is defined and authentication == "token" %}
+  authentication {
+    enabled = true
+    authentication-lifetime = 24 hours
+    enable-auto-login = true
+    type = JWT
+    login-url: {{ shardName }}
+  }
+{% endif %}
   xmpp: {
     client: {
       client-proxy: focus.{{ shardName }}

@@ -9,6 +9,15 @@ external_services = {
      { type = "turn", host = "{{ turnservername }}", port = {{ turnserverport }}, transport = "udp", secret = true, ttl = 86400, algorithm = "turn" },
      { type = "turns", host = "{{ turnservername }}", port = {{ turnserverport }}, transport = "tcp", secret = true, ttl = 86400, algorithm = "turn" }
 };
+
+--{% if authentication is defined and authentication == "token" %}
+--asap_accepted_issuers = { "*" }
+--asap_accepted_audiences = { "*" }
+
+--component_ports = { 5347 }
+--component_interface = "0.0.0.0"
+--{% endif %}
+
 -- enable websocket support
 consider_websocket_secure = true;
 cross_domain_websocket = true;
@@ -33,12 +42,10 @@ VirtualHost "{{ shardName }}"
     authentication = "{{ authentication | default('anonymous') }}"
     -- Properties below are modified by jitsi-meet-tokens package config
     -- and authentication above is switched to "token"
-{% if authentication is defined %}
+{% if authentication is defined and authentication == "token" %}
     app_id="{{ app_id }}"
     app_secret="{{ app_secret }}"
-{% else %}
-    --app_id="example_app_id"
-    --app_secret="example_app_secret"
+    allow_empty_token=false
 {% endif %}
     -- Assign this host a certificate for TLS, otherwise it would use the one
     -- set in the global section (if any).
@@ -63,6 +70,9 @@ VirtualHost "{{ shardName }}"
         "conference_duration";
         "muc_lobby_rooms";
         "av_moderation";
+{% if authentication is defined and authentication == "token" %}
+--        "presence_identity";
+{% endif %}
     }
     smacks_max_unacked_stanzas = 5;
     smacks_hibernation_time = 60; 
@@ -80,7 +90,7 @@ Component "conference.{{ shardName }}" "muc"
         "muc_meeting_id";
         "muc_domain_mapper";
         "polls";
-{% if authentication is defined %}
+{% if authentication is defined and authentication == "token" %}
         "token_verification";
 {% endif %}
     }
