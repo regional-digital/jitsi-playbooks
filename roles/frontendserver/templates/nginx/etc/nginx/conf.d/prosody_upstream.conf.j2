@@ -1,8 +1,10 @@
 upstream prosody_upstream {
     hash $arg_room consistent;
+{% if is_Cluster is defined and is_Cluster == True %}
 {% for clusterNode in groups[shardName] %}
     server {{ clusterNode }}:5280; # {{ shardName }}
 {% endfor %}
+{% endif %}
 }
 
 map $arg_room $jitsi_upstream {
