@@ -41,7 +41,7 @@
     backup: yes
   with_items:
     - prosody_0.11.10-1~focal1_amd64.deb
-  when: "'ubuntu' in group_names"
+  when: "ansible_distribution == 'Ubuntu'"
 
 - name: Copy Prosody Package to Debian-host
   ansible.builtin.copy:
@@ -53,7 +53,7 @@
     backup: yes
   with_items:
     - prosody_0.11.10-1~bullseye1_amd64.deb
-  when: "'debian' in group_names"
+  when: "ansible_distribution == 'Debian'"
 
 #first care about nginx
 - name: /etc/nginx/nginx.conf
@@ -318,14 +318,14 @@
     deb: "/opt/ansiblepackages/{{ item }}"
   with_items:
     - prosody_0.11.10-1~focal1_amd64.deb
-  when: "'ubuntu' in group_names"
+  when: "ansible_distribution == 'Ubuntu'"
 
 - name: Install Prosody Package on Debian
   apt:
     deb: "/opt/ansiblepackages/{{ item }}"
   with_items:
     - prosody_0.11.10-1~bullseye1_amd64.deb
-  when: "'debian' in group_names"
+  when: "ansible_distribution == 'Debian'"
 
 - name: create /etc/systemd/system/prosody.service.d
   file:
