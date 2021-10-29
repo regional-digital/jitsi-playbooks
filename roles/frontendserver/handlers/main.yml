@@ -3,6 +3,7 @@
   service: 
     name: nginx
     state: reloaded
+
 - name: restart prosody
   service: 
     name: prosody
@@ -11,7 +12,6 @@
   service: 
     name: jicofo
     state: restarted
+
 - name: reload systemd
-  service: 
-    name: systemd
-    state: reloaded
+  command: systemctl daemon-reload

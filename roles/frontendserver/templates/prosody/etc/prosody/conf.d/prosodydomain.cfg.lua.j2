@@ -1,0 +1,138 @@
+plugin_paths = { "/usr/share/jitsi-meet/prosody-plugins/" }
+
+-- domain mapper options, must at least have domain base set to use the mapper
+muc_mapper_domain_base = "{{ shardName }}";
+
+external_service_secret = "{{ turncredentials_secret }}";
+external_services = {
+     { type = "stun", host = "{{ turnservername }}", port = {{ turnserverport }} },
+     { type = "turn", host = "{{ turnservername }}", port = {{ turnserverport }}, transport = "udp", secret = true, ttl = 86400, algorithm = "turn" },
+     { type = "turns", host = "{{ turnservername }}", port = {{ turnserverport }}, transport = "tcp", secret = true, ttl = 86400, algorithm = "turn" }
+};
+
+--{% if authentication is defined and authentication == "token" %}
+--asap_accepted_issuers = { "*" }
+--asap_accepted_audiences = { "*" }
+
+--component_ports = { 5347 }
+--component_interface = "0.0.0.0"
+--{% endif %}
+
+-- enable websocket support
+consider_websocket_secure = true;
+cross_domain_websocket = true;
+
+cross_domain_bosh = false;
+consider_bosh_secure = true;
+https_ports = { }; -- Remove this line to prevent listening on port 5284
+
+-- https://ssl-config.mozilla.org/#server=haproxy&version=2.1&config=intermediate&openssl=1.1.0g&guideline=5.4
+ssl = {
+    protocol = "tlsv1_2+";
+    ciphers = "ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384"
+}
+
+unlimited_jids = {
+    "focus@auth.{{ shardName }}",
+    "jvb@auth.{{ shardName }}"
+}
+
+VirtualHost "{{ shardName }}"
+    -- enabled = false -- Remove this line to enable this host
+    authentication = "{{ authentication | default('anonymous') }}"
+    -- Properties below are modified by jitsi-meet-tokens package config
+    -- and authentication above is switched to "token"
+{% if authentication is defined and authentication == "token" %}
+    app_id="{{ app_id }}"
+    app_secret="{{ app_secret }}"
+    allow_empty_token=false
+{% endif %}
+    -- Assign this host a certificate for TLS, otherwise it would use the one
+    -- set in the global section (if any).
+    -- Note that old-style SSL on port 5223 only supports one certificate, and will always
+    -- use the global one.
+    ssl = {
+        key = "/etc/prosody/certs/{{ shardName }}.key";
+        certificate = "/etc/prosody/certs/{{ shardName }}.crt";
+    }
+    av_moderation_component = "avmoderation.{{ shardName }}"
+    speakerstats_component = "speakerstats.{{ shardName }}"
+    conference_duration_component = "conferenceduration.{{ shardName }}"
+    -- we need bosh
+    modules_enabled = {
+        "bosh";
+        "websocket";
+        "smacks";
+        "pubsub";
+        "ping"; -- Enable mod_ping
+        "speakerstats";
+        "external_services";
+        "conference_duration";
+        "muc_lobby_rooms";
+        "av_moderation";
+{% if authentication is defined and authentication == "token" %}
+--        "presence_identity";
+{% endif %}
+    }
+    smacks_max_unacked_stanzas = 5;
+    smacks_hibernation_time = 60; 
+    smacks_max_hibernated_sessions = 1;
+    smacks_max_old_sessions = 1;
+    c2s_require_encryption = false
+    lobby_muc = "lobby.{{ shardName }}"
+    main_muc = "conference.{{ shardName }}"
+    -- muc_lobby_whitelist = { "recorder.{{ shardName }}" } -- Here we can whitelist jibri to enter lobby enabled rooms
+
+Component "conference.{{ shardName }}" "muc"
+    restrict_room_creation = true
+    storage = "memory"
+    modules_enabled = {
+        "muc_meeting_id";
+        "muc_domain_mapper";
+        "polls";
+{% if authentication is defined and authentication == "token" %}
+        "token_verification";
+{% endif %}
+    }
+    admins = { "focus@auth.{{ shardName }}" }
+    muc_room_locking = false
+    muc_room_default_public_jids = true
+
+-- internal muc component
+Component "internal.auth.{{ shardName }}" "muc"
+    storage = "memory"
+    modules_enabled = {
+        "ping";
+    }
+    admins = { "focus@auth.{{ shardName }}", "jvb@auth.{{ shardName }}" }
+    muc_room_locking = false
+    muc_room_default_public_jids = true
+
+VirtualHost "auth.{{ shardName }}"
+    ssl = {
+        key = "/etc/prosody/certs/auth.{{ shardName }}.key";
+        certificate = "/etc/prosody/certs/auth.{{ shardName }}.crt";
+    }
+    modules_enabled = {
+        "limits_exception";
+    }
+    authentication = "internal_hashed"
+
+-- Proxy to jicofo's user JID, so that it doesn't have to register as a component.
+Component "focus.{{ shardName }}" "client_proxy"
+    target_address = "focus@auth.{{ shardName }}"
+
+Component "speakerstats.{{ shardName }}" "speakerstats_component"
+    muc_component = "conference.{{ shardName }}"
+
+Component "conferenceduration.{{ shardName }}" "conference_duration_component"
+    muc_component = "conference.{{ shardName }}"
+
+Component "avmoderation.{{ shardName }}" "av_moderation_component"
+    muc_component = "conference.{{ shardName }}"
+
+Component "lobby.{{ shardName }}" "muc"
+    storage = "memory"
+    restrict_room_creation = true
+    muc_room_locking = false
+    muc_room_default_public_jids = true

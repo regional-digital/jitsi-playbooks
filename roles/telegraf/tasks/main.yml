@@ -36,10 +36,10 @@
   notify:
     - telegraf restart
 
-- name: configure telegraf for group jitsivideobride
+- name: configure telegraf for group videobridge
   blockinfile:
     path: /etc/telegraf/telegraf.conf
-    marker: "# {mark} ANSIBLE MANAGED BLOCK jitsivideobride --"
+    marker: "# {mark} ANSIBLE MANAGED BLOCK videobridge --"
     block: |
       [[inputs.http]]
         urls = [ "http://localhost:9000/colibri/stats" ]
@@ -53,7 +53,7 @@
         response_timeout = "5s"
         method = "GET"
     backup: yes
-  when: "'jitsivideobride' in group_names and 'telegraf' in group_names"
+  when: "'videobridge' in group_names and 'telegraf' in group_names"
   notify:
     - telegraf restart
 

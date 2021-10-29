@@ -1,0 +1,13 @@
+- hosts: all
+  gather_facts: False
+  roles:
+    - common
+
+- hosts: debian
+  roles:
+    - common-debian
+
+- hosts: ubuntu
+  roles:
+    - common-ubuntu
+

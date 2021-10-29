@@ -1,0 +1,34 @@
+<IfModule mod_ssl.c>
+	<VirtualHost _default_:443>
+		ServerAdmin webmaster@localhost
+
+		DocumentRoot /var/www/html/{{ jitsiadmin_fqdn }}/public
+		<Directory /var/www/html/>
+			Options FollowSymLinks
+			AllowOverride All
+			Order Allow,Deny
+			Allow from All
+		</Directory>
+
+		ErrorLog ${APACHE_LOG_DIR}/{{ jitsiadmin_fqdn }}_error.log
+		CustomLog ${APACHE_LOG_DIR}/{{ jitsiadmin_fqdn }}_access.log combined
+
+		SSLEngine on
+
+		SSLCertificateFile	/etc/ssl/certs/{{ jitsiadmin_fqdn }}.pem
+		SSLCertificateKeyFile /etc/ssl/private/{{ jitsiadmin_fqdn }}.key
+
+		<FilesMatch "\.(cgi|shtml|phtml|php)$">
+				SSLOptions +StdEnvVars
+		</FilesMatch>
+		<Directory /usr/lib/cgi-bin>
+				SSLOptions +StdEnvVars
+		</Directory>
+
+        # enable HTTP/2, if available
+        Protocols h2 http/1.1
+
+        # HTTP Strict Transport Security (mod_headers is required) (63072000 seconds)
+        Header always set Strict-Transport-Security "max-age=63072000"
+	</VirtualHost>
+</IfModule>

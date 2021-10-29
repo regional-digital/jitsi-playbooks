@@ -11,10 +11,6 @@
     group: www-data
     mode: '0775'
 
-- name: check if ngingx-config exists in files/instances for {{ instance }}
-  local_action: stat path="files/instances/{{ instance }}/etc/nginx.conf.j2"
-  register: nginxconfigexists
-
 - name: set domain names for ngingx-config for {{ instance }}
   set_fact:
     domainNames: '{{ instanceVars.domainNames }}'
@@ -42,18 +38,6 @@
     state: absent
   when: instanceVars.dialInNumbers is not defined
 
-- name: copy nginx sites-available files for instances for {{ instance }}
-  template:
-    src: files/instances/{{ instance }}/etc/nginx.conf.j2
-    dest: /etc/nginx/sites-available/{{ instance }}.conf
-    owner: root
-    group: adm
-    mode: '0664'
-    backup: yes
-  when: nginxconfigexists.stat.exists == True
-  notify:
-    - reload nginx
-
 - name: generate nginx-config from Template for {{ instance }}
   template:
     src: instancename.conf.j2
@@ -62,43 +46,43 @@
     group: adm
     mode: '0664'
     backup: yes
-  when: nginxconfigexists.stat.exists == False
   notify:
     - reload nginx
 
-- name: check if certificate of instance {{ instance }} exists in letsencrypt folder
+- name: check if certificate of instance {{ instance }} exists on signaling server
   stat: 
-    path: /etc/letsencrypt/live/{{ deployto | default(instance) }}/fullchain.pem
+    path: /etc/ssl/certs/{{ deployto | default(instance) }}.pem
   register: letsencrypt_cert_exists
 
 - name: check if certificate of instance {{ instance }} exists on ansible server
-  local_action: stat path={{ filePathPrefix }}/certs/{{ deployto | default(instance) }}.fullchain.pem
+  local_action: stat path={{ filePathPrefix }}/certs/{{ deployto | default(instance) }}.pem
   register: cert_exists_local
   when: letsencrypt_cert_exists.stat.exists == False
 
-- name: create /etc/letsencrypt/live/{{ instance }}/
-  file:
-    state: directory
-    dest: /etc/letsencrypt/live/{{ deployto | default(instance) }}/
-    owner: root
-    group: root
-    mode: "0755"
-  when: letsencrypt_cert_exists.stat.exists == False and cert_exists_local.stat.exists == True
-
 - name: copy certificate of instance {{ instance }} from ansible host to server
   ansible.builtin.copy:
-    src: "{{ filePathPrefix }}/certs/{{ deployto | default(instance) }}.fullchain.pem"
-    dest: /etc/letsencrypt/live/{{ deployto | default(instance) }}/fullchain.pem
+    src: "{{ filePathPrefix }}/certs/{{ deployto | default(instance) }}.pem"
+    dest: /etc/ssl/certs/{{ deployto | default(instance) }}.pem
     owner: root
     group: root
     mode: '0644'
     backup: yes
   when: letsencrypt_cert_exists.stat.exists == False and cert_exists_local.stat.exists == True
 
+- name: check if private key of instance {{ instance }} exists on signaling server
+  stat: 
+    path: /etc/ssl/private/{{ deployto | default(instance) }}.key
+  register: letsencrypt_key_exists
+
+- name: check if private key of instance {{ instance }} exists on ansible server
+  local_action: stat path={{ filePathPrefix }}/certs/{{ deployto | default(instance) }}.key
+  register: cert_exists_local
+  when: letsencrypt_key_exists.stat.exists == False
+
 - name: copy private key of instance {{ instance }} from ansible host to server
   ansible.builtin.copy:
-    src: "{{ filePathPrefix }}/certs/{{ deployto | default(instance) }}.privkey.pem"
-    dest: /etc/letsencrypt/live/{{ deployto | default(instance) }}/privkey.pem
+    src: "{{ filePathPrefix }}/certs/{{ deployto | default(instance) }}.key"
+    dest: /etc/ssl/private/{{ deployto | default(instance) }}.key
     owner: root
     group: root
     mode: '0600'
@@ -106,15 +90,15 @@
   when: letsencrypt_cert_exists.stat.exists == False and cert_exists_local.stat.exists == True
 
 - name: Create letsencrypt certificate for {{ instance }}
-  shell: certbot certonly -n --webroot -w /var/www/letsencrypt -m {{ letsencrypt_email }} --agree-tos -d {{ deployto | default(instance) }}
+  shell: /root/.acme.sh/acme.sh --issue -w /var/www/acme -d {{ deployto | default(instance) }} --fullchain-file /etc/ssl/certs/{{ instance }}.pem --key-file /etc/ssl/private/{{ instance }}.key --reloadcmd "systemctl restart nginx" {{ acme_sh_additional_options | default('') }}
   args:
-    creates: /etc/letsencrypt/live/{{ deployto | default(instance) }}
+    creates: /etc/ssl/certs/{{ deployto | default(instance) }}.pem
   when: letsencrypt_cert_exists.stat.exists == False and cert_exists_local.stat.exists == False and instancevars[instance].certbotDomainString is not defined
 
 - name: Create letsencrypt certificate for {{ instance }} with multiple domains
-  shell: certbot certonly -n --webroot -w /var/www/letsencrypt -m {{ letsencrypt_email }} --agree-tos -d {{ instancevars[instance].certbotDomainString }}
+  shell: /root/.acme.sh/acme.sh --issue -w /var/www/acme -d {{ deployto | default(instancevars[instance].certbotDomainString) }} --fullchain-file /etc/ssl/certs/{{ instance }}.pem --key-file /etc/ssl/private/{{ instance }}.key --reloadcmd "systemctl restart nginx" {{ acme_sh_additional_options | default('') }}
   args:
-    creates: /etc/letsencrypt/live/{{ deployto | default(instance) }}
+    creates: /etc/ssl/certs/{{ deployto | default(instance) }}.pem
   when: letsencrypt_cert_exists.stat.exists == False and cert_exists_local.stat.exists == False and instancevars[instance].certbotDomainString is defined
 
 - name: activate nginx vhosts for {{ instance }}
@@ -125,23 +109,8 @@
     group: adm
     mode: '0664'
     state: link
-    backup: yes
   notify:
     - reload nginx
-
-- name: check if the inscance {{ instance }} has an own meet-configfile
-  local_action: stat path=files/instances/{{ instance }}/etc/meet-config.js
-  register: meetConfigCheck
-
-- name: if yes copy meet-config file for {{ instance }}
-  ansible.builtin.copy:
-    src: files/instances/{{ instance }}/etc/meet-config.js
-    dest: /etc/jitsi/meet/{{ deployto | default(instance) }}-config.js
-    owner: www-data
-    group: www-data
-    mode: '0775'
-    backup: yes
-  when: meetConfigCheck.stat.exists == True
 
 - name: set usedWebVersion to match path
   set_fact:
@@ -150,10 +119,10 @@
 
 - name: set usedWebVersion to match path
   set_fact:
-    usedWebVersion: ""
+    usedWebVersion: "-{{ defaultWebVersion }}"
   when: instanceVars.usedWebVersion is not defined
 
-- name: if not generate meet-config file for instance {{ instance }} from template
+- name: generate meet-config file for instance {{ instance }} from template
   template:
     src: meet-config{{ usedWebVersion }}.js.j2
     dest: /etc/jitsi/meet/{{ deployto | default(instance) }}-config.js
@@ -161,4 +130,36 @@
     group: www-data
     mode: '0775'
     backup: yes
-  when: meetConfigCheck.stat.exists == False
+
+- name: copy/update wwwroot-template for instance {{ instance }} from jitsi-meet{{ usedWebVersion}}
+  ansible.builtin.copy:
+    src: "files/jitsi-www/base/jitsi-meet{{ usedWebVersion}}/"
+    dest: /var/www/jitsi-meet-{{ deployto | default(instance) }}
+    local_follow: False
+    owner: www-data
+    group: www-data
+    mode: '0755'
+  when: redeploy is defined and usedWebVersion is defined
+
+- name: copy wwwroot of instance {{ instance }}
+  ansible.builtin.copy:
+    src: files/jitsi-www/instances/{{ instance }}/wwwroot/
+    dest: /var/www/jitsi-meet-{{ deployto | default(instance) }}
+    local_follow: False
+    owner: www-data
+    group: www-data
+    mode: '0755'
+
+- name: check if interface_config.js exists in instance-dir on ansible host
+  local_action: stat path=files/jitsi-www/instances/{{ instance }}/wwwroot/interface_config.js
+  register: interface_config_exists_local
+
+- name: generate meet-config file for instance {{ instance }} from template
+  template:
+    src: interface_config{{ usedWebVersion }}.js.j2
+    dest: /var/www/jitsi-meet-{{ deployto | default(instance) }}/interface_config.js
+    owner: www-data
+    group: www-data
+    mode: '0775'
+    backup: yes
+  when: interface_config_exists_local.stat.exists == False

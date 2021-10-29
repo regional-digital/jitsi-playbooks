@@ -1,0 +1,20 @@
+---
+- name: Install system tools and utilities
+  apt:
+    name: 
+      - vlan
+    update_cache: yes
+
+- name: generate /etc/network/interfaces.d/99_vlan_{{ privateVLANID }}.conf
+  template:
+    src: 99_vlan.conf.j2
+    dest: /etc/network/interfaces.d/99_vlan_{{ privateVLANID }}.conf
+    owner: root
+    group: root
+    mode: "0644"
+  when: private_vlan_ip is defined
+  register: vlan
+
+- name: ifup vlan if vlan changed
+  command: ifup {{ ansible_default_ipv4.interface }}.{{ privateVLANID }}
+  when: vlan.changed

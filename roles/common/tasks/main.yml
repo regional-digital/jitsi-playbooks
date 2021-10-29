@@ -1,7 +1,38 @@
 ---
+- name: check if ssh on defined port running
+  wait_for:
+    port: "{{ ssh_port }}"
+    state: "started"
+    host: "{{ inventory_hostname }}"
+    connect_timeout: "5"
+    timeout: "10"
+  delegate_to: "localhost"
+  ignore_errors: "yes"
+  register: final_ssh
+
+- name: Set configured port fact
+  set_fact:
+    configured_port: "{{ ansible_port }}"
+  when: final_ssh is defined and final_ssh.failed == True
+
+- name: Set inventory ansible_port to default
+  set_fact:
+    ansible_port: "22"
+  when: final_ssh is defined and final_ssh.failed == True
+
+- name: generate /etc/ssh/sshd_config
+  template:
+    src: sshd_config.j2
+    dest: /etc/ssh/sshd_config
+    owner: root
+    group: root
+    mode: "0644"
+  notify:
+    - restart sshd
+
 - name: Set a hostname
   hostname:
-    name: "{{ fqdn }}"
+    name: "{{ hostname }}"
 
 - name: Install system tools and utilities
   apt:
@@ -9,7 +40,7 @@
       - sudo
       - wget
       - curl
-      - python-apt
+      - python-apt-common
       - apt-transport-https
       - gpg
       - gpg-agent
@@ -28,10 +59,10 @@
     creates: /home/{{ item }}
   with_items: "{{ users }}"
 
-- name: adding existing users to groups sudo and adm
+- name: adding existing users to groups sudo
   user:
     name: '{{ item }}'
-    groups: sudo,adm
+    groups: sudo
     append: yes
   with_items: "{{ users }}"
 
@@ -40,7 +71,7 @@
     dest: "/etc/sudoers"
     state: "present"
     regexp: "^%sudo"
-    line: "%sudo ALL=(ALL) NOPASSWD:ALL"
+    line: "%sudo\tALL=(ALL:ALL) NOPASSWD:ALL"
     validate: '/usr/sbin/visudo -cf %s'
     backup: yes
 

@@ -1,14 +1,10 @@
 user www-data;
-worker_processes 12;
-worker_rlimit_nofile 30000;
+worker_processes auto;
 pid /run/nginx.pid;
 include /etc/nginx/modules-enabled/*.conf;
 
-load_module /etc/nginx/modules/ngx_http_vhost_traffic_status_module.so;
-
 events {
-	worker_connections 10240;
-        use epoll;
+	worker_connections 768;
 	# multi_accept on;
 }
 
@@ -20,12 +16,10 @@ http {
 
 	sendfile on;
 	tcp_nopush on;
-	tcp_nodelay on;
-	keepalive_timeout 65;
 	types_hash_max_size 2048;
 	# server_tokens off;
 
-	server_names_hash_bucket_size 64;
+	# server_names_hash_bucket_size 64;
 	# server_name_in_redirect off;
 
 	include /etc/nginx/mime.types;
@@ -34,7 +28,6 @@ http {
         application/wasm     wasm;
     }
 	default_type application/octet-stream;
-
 
 	##
 	# SSL Settings
@@ -48,7 +41,7 @@ http {
 	##
 
 	access_log off;
-	#error_log /var/log/nginx/error.log;
+	error_log off;
 
 	##
 	# Gzip Settings
@@ -63,12 +56,6 @@ http {
 	# gzip_http_version 1.1;
 	# gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript;
 
-        ##
-        ## Enable nginx-module-vts
-        ##
-        vhost_traffic_status_zone;
-        vhost_traffic_status_dump /var/log/nginx/vts.db;
-
 	##
 	# Virtual Host Configs
 	##
@@ -81,17 +68,17 @@ http {
 #mail {
 #	# See sample authentication script at:
 #	# http://wiki.nginx.org/ImapAuthenticateWithApachePhpScript
-# 
+#
 #	# auth_http localhost/auth.php;
 #	# pop3_capabilities "TOP" "USER";
 #	# imap_capabilities "IMAP4rev1" "UIDPLUS";
-# 
+#
 #	server {
 #		listen     localhost:110;
 #		protocol   pop3;
 #		proxy      on;
 #	}
-# 
+#
 #	server {
 #		listen     localhost:143;
 #		protocol   imap;

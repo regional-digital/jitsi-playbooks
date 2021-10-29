@@ -1,0 +1,163 @@
+---
+- name: install stuff
+  apt:
+    name:
+      - apache2
+      - php
+#      - mariadb-server
+      - libapache2-mod-php
+      - npm
+      - php-mbstring
+      - php-xsl
+      - php-dom
+      - php-xml
+      - php-gd
+      - php-zip
+      - php-sqlite3
+      - php-intl
+      - python3-pexpect
+
+- name: create directory for acme-stuff /var/www/acme
+  ansible.builtin.file:
+    path: /var/www/acme
+    state: directory
+    owner: www-data
+    group: www-data
+    mode: '0755'
+
+- name: enable apache module rewrite
+  command: a2enmod rewrite
+  args:
+    creates: /etc/apache2/mods-enabled/rewrite.load
+  notify:
+    reload apache2
+
+- name: enable apache module headers
+  command: a2enmod headers
+  args:
+    creates: /etc/apache2/mods-enabled/headers.load
+  notify:
+    reload apache2
+
+- name: enable php module sqlite3
+  command: phpenmd sqlite3
+  args:
+    creates: /etc/php/7.4/apache2/conf.d/20-sqlite3.ini
+  notify:
+    reload apache2
+
+- name: generate /etc/apache2/sites-available/{{ fqdn }}.conf
+  template:
+    src: fqdn.conf.j2
+    dest: /etc/apache2/sites-available/{{ fqdn }}.conf
+    owner: root
+    group: root
+    mode: "0644"
+    backup: yes
+  notify:
+    - reload apache2
+
+- name: activate default-site (needed for getting letsencrypt-certs)
+  ansible.builtin.file:
+    src: /etc/apache2/sites-available/{{ fqdn }}.conf
+    dest: /etc/apache2/sites-enabled/{{ fqdn }}.conf
+    state: link
+  notify:
+    - reload apache2
+    
+- name: Flush handlers
+  meta: flush_handlers
+
+- name: Create certificate for webserver
+  shell: /root/.acme.sh/acme.sh --issue -w /var/www/acme -d {{ fqdn }} --fullchain-file /etc/ssl/certs/{{ fqdn }}.pem --key-file /etc/ssl/private/{{ fqdn }}.key --reloadcmd "systemctl reload apache2" {{ acme_sh_additional_options | default('') }}
+  args:
+    creates: /etc/ssl/certs/{{ fqdn }}.pem
+
+- name: enable apache module ssl
+  command: a2enmod ssl
+  args:
+    creates: /etc/apache2/mods-enabled/ssl.load
+  notify:
+    reload apache2
+
+- name: Clone github repository https://github.com/H2-invent/jitsi-admin
+  git:
+    repo: https://github.com/H2-invent/jitsi-admin
+    dest: /var/www/html/{{ jitsiadmin_fqdn }}
+    version: 0.70.7
+    update: no
+
+- name: generate /etc/apache2/sites-available/{{ fqdn }}-ssl.conf
+  template:
+    src: fqdn-ssl.conf.j2
+    dest: /etc/apache2/sites-available/{{ fqdn }}-ssl.conf
+    owner: root
+    group: root
+    mode: "0644"
+    backup: yes
+  notify:
+    - reload apache2
+
+- name: activate  /etc/apache2/sites-available/{{ fqdn }}-ssl.conf
+  ansible.builtin.file:
+    src: /etc/apache2/sites-available/{{ fqdn }}-ssl.conf
+    dest: /etc/apache2/sites-enabled/{{ fqdn }}-ssl.conf
+    state: link
+  notify:
+    - reload apache2
+
+- name: generate /etc/apache2/conf-available/ssl.conf
+  template:
+    src: ssl.conf.j2
+    dest: /etc/apache2/conf-available/ssl.conf
+    owner: root
+    group: root
+    mode: "0644"
+    backup: yes
+  notify:
+    - reload apache2
+
+- name: activate  /etc/apache2/conf-available/ssl.conf
+  ansible.builtin.file:
+    src: /etc/apache2/conf-available/ssl.conf
+    dest: /etc/apache2/conf-enabled/ssl.conf
+    state: link
+  notify:
+    - reload apache2
+
+- name: install jitsi-admin
+  expect:
+    chdir: /var/www/html/{{ jitsiadmin_fqdn }}
+    command: bash install.sh
+    responses:
+      (.*)Want to enter Database DSN directly or should we ask you for your mysql-credentials(.*): "dsn"
+      (.*)Enter Database DSN(.*): "sqlite3:////var/www/html/{{ jitsiadmin_fqdn }}/{{ jitsiadmin_fqdn }}.sqlite3"
+      (.*)WARNING! You are about to add, delete or synchronize migration versions from the version table that could result in data lost. Are you sure you wish to continue?(.*): "yes"
+      (.*)Enter smtp host(.*): "{{ jitsiadmin_smtp_host }}"
+      (.*)Enter smtp port(.*): "{{ jitsiadmin_smtp_port }}"
+      (.*)Enter smtp username(.*): "{{ jitsiadmin_smtp_username }}"
+      (.*)Enter smtp password(.*): "{{ jitsiadmin_smtp_password }}"
+      (.*)Enter SMTP encrytion tls/ssl/none(.*): "{{ jitsiadmin_smtp_encryption }}"
+      (.*)Enter the base url of the Jitsi-Admin(.*): "{{ jitsiadmin_url }}"
+      (.*)Enter the URL to keycloak with /auth at the end(.*): "{{ jitsiadmin_keycloak_url }}"
+      (.*)Keycloak realm(.*): "{{ jitsiadmin_keycloak_realm }}"
+      (.*)Keycloak Client Id(.*): "{{ jitsiadmin_keycloak_client }}"
+      (.*)Keycloak Client Secret(.*): "{{ jitsiadmin_keycloak_secret }}"
+    creates: /var/www/html/{{ jitsiadmin_fqdn }}/{{ jitsiadmin_fqdn }}.sqlite3
+    timeout: 1200
+
+- name: chown /var/www/html/{{ jitsiadmin_fqdn }}/{{ jitsiadmin_fqdn }}.sqlite3
+  file:
+    path: /var/www/html/{{ jitsiadmin_fqdn }}/{{ jitsiadmin_fqdn }}.sqlite3
+    owner: www-data
+    group: www-data
+    mode: '0755'
+
+- name: chown /var/www/html/{{ jitsiadmin_fqdn }}
+  file:
+    state: directory
+    path: /var/www/html/{{ jitsiadmin_fqdn }}
+    owner: www-data
+    group: www-data
+    mode: '0755'
+    recurse: yes

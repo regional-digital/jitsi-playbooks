@@ -1,0 +1,35 @@
+---
+- hosts: all
+  gather_facts: False
+  roles:
+    - common
+    - acme.sh
+    - cronapt
+#    - telegraf
+#    - nagios_agent
+
+- hosts: debian
+  roles:
+    - common-debian
+
+- hosts: ubuntu
+  roles:
+    - common-ubuntu
+
+#- hosts: rsnapshot_client
+#  gather_facts: true
+#  roles:
+#    - rsnapshot_client
+
+- hosts: jitsisignal
+  roles:
+    - frontendserver
+    - instances
+
+- hosts: videobridge
+  roles:
+    - videobridge
+
+- hosts: turnserver
+  roles:
+    - turnserver

@@ -1,0 +1,4 @@
+auto {{ ansible_default_ipv4.interface }}.{{ privateVLANID }}
+iface {{ ansible_default_ipv4.interface }}.{{ privateVLANID }} inet static
+    address {{ internal_interface }}
+    netmask {{ privateVLANNetmask }}
