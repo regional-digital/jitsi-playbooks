@@ -8,11 +8,11 @@
 #    - telegraf
 #    - nagios_agent
 
-- hosts: debian
+- hosts: all
   roles:
     - common-debian
 
-- hosts: ubuntu
+- hosts: all
   roles:
     - common-ubuntu
 
