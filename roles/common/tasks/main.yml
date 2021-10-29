@@ -61,17 +61,6 @@
   notify:
     - systemctl apply
 
-#- name: generate /etc/netplan/99_vlan.yaml
-#  template:
-#    src: 99_vlan.yaml.j2
-#    dest: /etc/netplan/99_vlan.yaml
-#    owner: root
-#    group: root
-#    mode: "0644"
-#  when: private_vlan_ip is not defined or managevlanconfig == True
-#  notify:
-#    - netplan apply
-
 - name: edit hosts 1
   blockinfile:
     path: /etc/hosts
