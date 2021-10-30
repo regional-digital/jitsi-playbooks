@@ -17,9 +17,9 @@
   file:
     state: file
     path: /etc/ssl/private/{{ turnservername }}.key
-    owner: turnserver
-    group: turnserver
-    mode: '0400'
+    owner: root
+    group: root
+    mode: '0750'
   notify:
     - restart coturn
 
@@ -27,9 +27,9 @@
   file:
     state: file
     path: /etc/ssl/certs/{{ turnservername }}.pem
-    owner: turnserver
-    group: turnserver
-    mode: '0400'
+    owner: root
+    group: root
+    mode: '0660'
   notify:
     - restart coturn
 
