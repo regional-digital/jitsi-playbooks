@@ -17,9 +17,9 @@
       - php-intl
       - python3-pexpect
 
-- name: create directory for acme-stuff /var/www/acme
+- name: create directory for acme-stuff /var/www/letsencrypt
   ansible.builtin.file:
-    path: /var/www/acme
+    path: /var/www/letsencrypt
     state: directory
     owner: www-data
     group: www-data
