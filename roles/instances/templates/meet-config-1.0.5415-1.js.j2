@@ -50,7 +50,7 @@ var config = {
 
         // P2P test mode disables automatic switching to P2P when there are 2
         // participants in the conference.
-        p2pTestMode: false
+        // p2pTestMode: false,
 
         // Enables the test specific features consumed by jitsi-meet-torture
         // testMode: false
@@ -101,7 +101,7 @@ var config = {
     // Audio
 
     // Disable measuring of audio levels.
-    disableAudioLevels: true,
+    // disableAudioLevels: false,
     // audioLevelsInterval: 200,
 
     // Enabling this will run the lib-jitsi-meet no audio detection module which
@@ -129,7 +129,7 @@ var config = {
     // startAudioOnly: false,
 
     // Every participant after the Nth will start audio muted.
-    startAudioMuted: 10,
+    // startAudioMuted: 10,
 
     // Start calls with audio muted. Unlike the option above, this one is only
     // applied locally. FIXME: having these 2 options is confusing.
@@ -193,7 +193,7 @@ var config = {
     // (no longer sent) until they are requested again. This is enabled by default. This must be enabled for screen
     // sharing to work as expected on Chrome. Disabling this might result in low resolution screenshare being sent
     // by the client.
-    enableLayerSuspension: true,
+    // enableLayerSuspension: false,
 
     // Every participant after the Nth will start video muted.
     // startVideoMuted: 10,
@@ -216,10 +216,10 @@ var config = {
     // Desktop sharing
 
     // Optional desktop sharing frame rate options. Default value: min:5, max:5.
-    desktopSharingFrameRate: {
-         min: 5,
-         max: 20
-    },
+    // desktopSharingFrameRate: {
+    //     min: 5,
+    //     max: 5
+    // },
 
     // Try to start calls with screen-sharing instead of camera video.
     // startScreenSharing: false,
@@ -894,8 +894,8 @@ var config = {
         downloadAppsUrl: '{{ instanceVars.downloadAppsUrl }}',
 {% endif %}
     },
-    
-        // Options related to the remote participant menu.
+
+    // Options related to the remote participant menu.
     // remoteVideoMenu: {
     //     // If set to true the 'Kick out' button will be disabled.
     //     disableKick: true,
