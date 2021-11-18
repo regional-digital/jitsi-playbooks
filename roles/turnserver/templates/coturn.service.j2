@@ -4,8 +4,8 @@ Documentation=man:coturn(1) man:turnadmin(1) man:turnserver(1)
 After=network.target
 
 [Service]
-User=root
-Group=root
+User=turnserver
+Group=turnserver
 Type=forking
 RuntimeDirectory=turnserver
 PIDFile=/run/turnserver/turnserver.pid
