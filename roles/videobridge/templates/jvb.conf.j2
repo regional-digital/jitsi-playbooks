@@ -51,7 +51,7 @@ videobridge {
     }
     websockets {
         enabled = true
-        domain = "{{ hostname }}:443"
+        domain = "{{ frontenddnsname }}:443"
         server-id = "{{ hostname }}"
         tls = true
     }
