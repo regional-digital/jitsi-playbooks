@@ -23,7 +23,7 @@
   meta: flush_handlers
 
 - name: Create certificate for webserver
-  shell: /root/.acme.sh/acme.sh --issue -w /var/www/acme -d {{ jitsiadmin_instanceVars[jitsiadmin_instance].fqdn }} --fullchain-file /etc/ssl/certs/{{ jitsiadmin_instanceVars[jitsiadmin_instance].fqdn }}.pem --key-file /etc/ssl/private/{{ jitsiadmin_instanceVars[jitsiadmin_instance].fqdn }}.key --reloadcmd "systemctl reload apache2" {{ acme_sh_additional_options | default('') }}
+  shell: /root/.acme.sh/acme.sh --issue -w /var/www/letsencrypt -d {{ jitsiadmin_instanceVars[jitsiadmin_instance].fqdn }} --fullchain-file /etc/ssl/certs/{{ jitsiadmin_instanceVars[jitsiadmin_instance].fqdn }}.pem --key-file /etc/ssl/private/{{ jitsiadmin_instanceVars[jitsiadmin_instance].fqdn }}.key --reloadcmd "systemctl reload apache2" {{ acme_sh_additional_options | default('') }}
   args:
     creates: /etc/ssl/certs/{{ jitsiadmin_instanceVars[jitsiadmin_instance].fqdn }}.pem
 

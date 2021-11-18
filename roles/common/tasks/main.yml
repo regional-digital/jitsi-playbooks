@@ -98,14 +98,14 @@
     marker: "## {mark} ANSIBLE MANAGED BLOCK 1 ##"
     block: "{{ hostsblock1 }}"
     backup: yes
-  when: private_vlan_ip is defined
+  when: internal_interface is defined
 
 - name: edit hosts 2
   blockinfile:
     path: /etc/hosts
     marker: "## {mark} ANSIBLE MANAGED BLOCK 2 ##"
     block: |
-      127.0.0.1 localhost.localdomain localhost {{ inventory_hostname  }} {{ fqdn  }}
+      127.0.0.1 localhost.localdomain localhost {{ hostname  }} {{ fqdn  }}
     backup: yes
 
 - name: create folder for packages

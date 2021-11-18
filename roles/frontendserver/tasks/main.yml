@@ -82,9 +82,9 @@
     name: /var/www/html
     state: absent
 
-- name: create directory for acme-stuff /var/www/acme
+- name: create directory for acme-stuff /var/www/letsencrypt
   ansible.builtin.file:
-    path: /var/www/acme
+    path: /var/www/letsencrypt
     state: directory
     owner: www-data
     group: www-data
@@ -148,55 +148,6 @@
     mode: '0600'
     backup: yes
   when: privkey_exists.stat.exists == False and privkey_exists_local.stat.exists == True
-
-- name: Flush handlers
-  meta: flush_handlers
-
-- name: Create certificate for signaling-server
-  shell: /root/.acme.sh/acme.sh --issue -w /var/www/acme -d {{ fqdn }} --fullchain-file /etc/ssl/certs/{{ fqdn }}.pem --key-file /etc/ssl/private/{{ fqdn }}.key --reloadcmd "systemctl restart nginx" {{ acme_sh_additional_options | default('') }}
-  args:
-    creates: /etc/letsencrypt/live/{{ fqdn }}
-  when: cert_exists.stat.exists == False and cert_exists_local.stat.exists == False
-
-- name: recheck if certificate of signaling server exists in letsencrypt folder
-  stat: 
-    path: /etc/ssl/certs/{{ fqdn }}.pem
-  register: cert_exists
-
-- name: generate /etc/nginx/sites-available/default-site-ssl.conf
-  template:
-    src: nginx/etc/nginx/sites-available/default-site-ssl.conf.j2
-    dest: /etc/nginx/sites-available/default-site-ssl.conf
-    owner: root
-    group: adm
-    mode: "0664"
-    backup: yes
-  when: cert_exists.stat.exists == True
-  notify:
-    - reload nginx
-
-- name: activate default-site-ssl (needed for getting letsencrypt-certs before able to activate instance-site-config)
-  ansible.builtin.file:
-    src: /etc/nginx/sites-available/default-site-ssl.conf
-    dest: /etc/nginx/sites-enabled/default-site-ssl.conf
-    owner: root
-    group: adm
-    mode: '0664'
-    state: link
-  notify:
-    - reload nginx
-
-- name: /etc/nginx/conf.d/prosody_upstream.conf
-  template:
-    src: nginx/etc/nginx/conf.d/prosody_upstream.conf.j2
-    dest: /etc/nginx/conf.d/prosody_upstream.conf
-    owner: root
-    group: adm
-    mode: "0770"
-    backup: yes
-  when: cluster_partner is defined
-  notify:
-    - reload nginx
 
 - name: check if /var/log/nginx/vts.db exists
   stat: 
@@ -278,6 +229,52 @@
 - name: Flush handlers
   meta: flush_handlers
 
+- name: Create certificate for signaling-server
+  shell: /root/.acme.sh/acme.sh --issue -w /var/www/letsencrypt -d {{ fqdn }} --fullchain-file /etc/ssl/certs/{{ fqdn }}.pem --key-file /etc/ssl/private/{{ fqdn }}.key --reloadcmd "systemctl restart nginx" {{ acme_sh_additional_options | default('') }}
+  args:
+    creates: /etc/letsencrypt/live/{{ fqdn }}
+  when: cert_exists.stat.exists == False and cert_exists_local.stat.exists == False
+
+- name: recheck if certificate of signaling server exists in letsencrypt folder
+  stat: 
+    path: /etc/ssl/certs/{{ fqdn }}.pem
+  register: cert_exists
+
+- name: generate /etc/nginx/sites-available/default-site-ssl.conf
+  template:
+    src: nginx/etc/nginx/sites-available/default-site-ssl.conf.j2
+    dest: /etc/nginx/sites-available/default-site-ssl.conf
+    owner: root
+    group: adm
+    mode: "0664"
+    backup: yes
+  when: cert_exists.stat.exists == True
+  notify:
+    - reload nginx
+
+- name: activate default-site-ssl (needed for getting letsencrypt-certs before able to activate instance-site-config)
+  ansible.builtin.file:
+    src: /etc/nginx/sites-available/default-site-ssl.conf
+    dest: /etc/nginx/sites-enabled/default-site-ssl.conf
+    owner: root
+    group: adm
+    mode: '0664'
+    state: link
+  notify:
+    - reload nginx
+
+- name: /etc/nginx/conf.d/prosody_upstream.conf
+  template:
+    src: nginx/etc/nginx/conf.d/prosody_upstream.conf.j2
+    dest: /etc/nginx/conf.d/prosody_upstream.conf
+    owner: root
+    group: adm
+    mode: "0770"
+    backup: yes
+  when: cluster_partner is defined
+  notify:
+    - reload nginx
+
 - name: Set debconf-answers for jitsi-meet
   debconf:
     name: "{{ item.name }}"
@@ -303,6 +300,13 @@
     - { name: 'jitsi-meet-tokens', question: 'jitsi-meet-prosody/prosody_config', value: '/etc/prosody/conf.avail/{{ hostname }}.cfg.lua', vtype: 'string' }
     - { name: 'jitsi-meet-web-config', question: 'jitsi-meet/cert-choice', value: "Generate a new self-signed certificate (You will later get a chance to obtain a Let's encrypt certificate)", vtype: 'select' }
 
+- name: Install Prosody Package on Ubuntu
+  apt:
+    deb: "/opt/ansiblepackages/{{ item }}"
+  with_items:
+    - prosody_0.11.10-1~focal1_amd64.deb
+  when: "ansible_distribution == 'Ubuntu'"
+
 - name: Install Jitsi Packages
   apt:
     deb: "/opt/ansiblepackages/{{ item }}"
@@ -312,13 +316,6 @@
     - jitsi-meet-tokens_1.0.5415-1_all.deb
     - jitsi-meet-web_1.0.5415-1_all.deb
     - jitsi-meet-web-config_1.0.5415-1_all.deb
-
-- name: Install Prosody Package on Ubuntu
-  apt:
-    deb: "/opt/ansiblepackages/{{ item }}"
-  with_items:
-    - prosody_0.11.10-1~focal1_amd64.deb
-  when: "ansible_distribution == 'Ubuntu'"
 
 - name: Install Prosody Package on Debian
   apt:
@@ -486,3 +483,9 @@
     backup: yes
   notify:
     - restart jicofo
+
+- name: remove /etc/jitsi/jicofo/sip-communicator.properties
+  file:
+    name: /etc/jitsi/jicofo/sip-communicator.properties
+    state: absent
+
