@@ -196,7 +196,7 @@ var config = {
     // enableLayerSuspension: false,
 
     // Every participant after the Nth will start video muted.
-    // startVideoMuted: 10,
+    startVideoMuted: 10,
 
     // Start calls with video muted. Unlike the option above, this one is only
     // applied locally. FIXME: having these 2 options is confusing.
@@ -422,6 +422,8 @@ var config = {
 
     // UI
     //
+    openBridgeChannel: 'websocket',
+    useStunTurn: true,
 
     // Disables responsive tiles.
     // disableResponsiveTiles: false,
