@@ -57,6 +57,12 @@ http {
 	# gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript;
 
 	##
+	## Enable nginx-module-vts
+	##
+	vhost_traffic_status_zone;
+	vhost_traffic_status_dump /var/log/nginx/vts.db;
+
+	##
 	# Virtual Host Configs
 	##
 
