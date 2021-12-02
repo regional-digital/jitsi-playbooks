@@ -19,71 +19,46 @@
     update_cache: yes
   when: "'telegraf' in group_names"
 
-- name: configure telegraf for all hosts
-  blockinfile:
-    path: /etc/telegraf/telegraf.conf
-    marker: "# {mark} ANSIBLE MANAGED BLOCK --"
-    block: |
-      [[outputs.influxdb]]
-        database = "{{ influxdb_database }}"
-        urls = [ "{{ influxdb_url }}" ]
-        username = "{{ influxdb_jitsi_user }}"
-        password = "{{ influxdb_jitsi_password }}"
-      [[inputs.net]]
-      [[inputs.netstat]]
+- name: generate /etc/telegraf/telegraf.conf
+  template:
+    src: telegraf.conf.j2
+    dest: /etc/telegraf/telegraf.conf
     backup: yes
   when: "'telegraf' in group_names"
   notify:
     - telegraf restart
 
-- name: configure telegraf for group videobridge
-  blockinfile:
-    path: /etc/telegraf/telegraf.conf
-    marker: "# {mark} ANSIBLE MANAGED BLOCK videobridge --"
-    block: |
-      [[inputs.http]]
-        urls = [ "http://localhost:9000/colibri/stats" ]
-        data_format = "json"
-        name_override = "jitsi"
-      [[inputs.http_response]]
-        name_override = "jvb-health"
-        urls = [
-          "http://localhost:9000/about/health",
-        ]
-        response_timeout = "5s"
-        method = "GET"
+- name: generate /etc/telegraf/telegraf.d/outputs.influxdb.conf
+  template:
+    src: outputs.influxdb.conf.j2
+    dest: /etc/telegraf/telegraf.d/outputs.influxdb.conf
+    backup: yes
+  when: "'telegraf' in group_names"
+  notify:
+    - telegraf restart
+
+- name: generate /etc/telegraf/telegraf.d/videobridge.conf
+  template:
+    src: videobridge.conf.j2
+    dest: /etc/telegraf/telegraf.d/videobridge.conf
     backup: yes
   when: "'videobridge' in group_names and 'telegraf' in group_names"
   notify:
     - telegraf restart
 
 - name: configure telegraf for group jitsisignal
-  blockinfile:
-    path: /etc/telegraf/telegraf.conf
-    marker: "# {mark} ANSIBLE MANAGED BLOCK jitsisignal --"
-    block: |
-      [[inputs.http]]
-        urls = [ "http://localhost:9002/stats" ]
-        data_format = "json"
-        name_override = "jicofo"
-      [[inputs.http]]
-        urls = [ "http://localhost:9001/status/format/json" ]
-        data_format = "json"
-        name_override = "nginx"
+  template:
+    src: jitsisignal.conf.j2
+    dest: /etc/telegraf/telegraf.d/jitsisignal.conf
     backup: yes
   when: "'jitsisignal' in group_names and 'telegraf' in group_names"
   notify:
     - telegraf restart
 
 - name: configure telegraf for group jigasi
-  blockinfile:
-    path: /etc/telegraf/telegraf.conf
-    marker: "# {mark} ANSIBLE MANAGED BLOCK jigasi --"
-    block: |
-      [[inputs.http]]
-        urls = [ "http://localhost:9001/about/stats" ]
-        data_format = "json"
-        name_override = "jigasi"
+  template:
+    src: jigasi.conf.j2
+    dest: /etc/telegraf/telegraf.d/jigasi.conf
     backup: yes
   when: "'jigasi' in group_names and 'telegraf' in group_names"
   notify:

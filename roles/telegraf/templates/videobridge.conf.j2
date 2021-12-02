@@ -1,0 +1,9 @@
+[[inputs.http]]
+  urls = [ "http://localhost:9000/colibri/stats" ]
+  data_format = "json"
+  name_override = "jitsi"
+[[inputs.http_response]]
+  name_override = "jvb-health"
+  urls = ["http://localhost:9000/about/health",]
+  response_timeout = "5s"
+  method = "GET"

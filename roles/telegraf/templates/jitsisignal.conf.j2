@@ -1,0 +1,8 @@
+[[inputs.http]]
+  urls = [ "http://localhost:9002/stats" ]
+  data_format = "json"
+  name_override = "jicofo"
+[[inputs.http]]
+  urls = [ "http://localhost:9001/status/format/json" ]
+  data_format = "json"
+  name_override = "nginx"
