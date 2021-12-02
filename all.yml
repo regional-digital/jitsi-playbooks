@@ -5,8 +5,8 @@
     - common
     - acme.sh
     - cronapt
-#    - telegraf
-#    - nagios_agent
+    - telegraf
+    - nagios_agent
 
 - hosts: all
   roles:
