@@ -27,13 +27,13 @@
     mode: '0600'
     backup: yes
   with_items:
-    - jitsi-videobridge2_2.1-570-gb802be83-1_all.deb
+    - jitsi-videobridge2_2.1-595-g3637fda4-1_all.deb
 
 - name: Install Jitsi Packages
   apt:
     deb: "/opt/ansiblepackages/{{ item }}"
   with_items:
-    - jitsi-videobridge2_2.1-570-gb802be83-1_all.deb
+    - jitsi-videobridge2_2.1-595-g3637fda4-1_all.deb
 
 - name: generate /etc/jitsi/videobridge/logging.properties
   template:
