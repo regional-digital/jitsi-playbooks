@@ -1,4 +1,6 @@
 org.ice4j.ice.harvest.DISABLE_AWS_HARVESTER=true
-org.ice4j.ice.harvest.STUN_MAPPING_HARVESTER_ADDRESSES={{ turnservername }}:{{ turnserverport }}
+org.ice4j.ice.harvest.NAT_HARVESTER_LOCAL_ADDRESS={{ internal_interface }}
+org.ice4j.ice.harvest.NAT_HARVESTER_PUBLIC_ADDRESS={{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}
+#org.ice4j.ice.harvest.STUN_MAPPING_HARVESTER_ADDRESSES={{ turnservername }}:{{ turnserverport }}
 org.jitsi.videobridge.ENABLE_STATISTICS=true
 org.jitsi.videobridge.STATISTICS_TRANSPORT=muc
