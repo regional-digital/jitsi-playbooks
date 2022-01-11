@@ -3,11 +3,19 @@ plugin_paths = { "/usr/share/jitsi-meet/prosody-plugins/" }
 -- domain mapper options, must at least have domain base set to use the mapper
 muc_mapper_domain_base = "{{ shardName }}";
 
-external_service_secret = "{{ turncredentials_secret }}";
-external_services = {
-     { type = "stun", host = "{{ turnservername }}", port = {{ turnserverport }} },
-     { type = "turn", host = "{{ turnservername }}", port = {{ turnserverport }}, transport = "udp", secret = true, ttl = 86400, algorithm = "turn" },
-     { type = "turns", host = "{{ turnservername }}", port = {{ turnserverport }}, transport = "tcp", secret = true, ttl = 86400, algorithm = "turn" }
+-- external_service_secret = "{{ turncredentials_secret }}";
+-- external_services = {
+--      { type = "stun", host = "{{ turnservername }}", port = {{ turnserverport }} },
+--      { type = "turn", host = "{{ turnservername }}", port = {{ turnserverport }}, transport = "udp", secret = true, ttl = 86400, algorithm = "turn" },
+--      { type = "turns", host = "{{ turnservername }}", port = {{ turnserverport }}, transport = "tcp", secret = true, ttl = 86400, algorithm = "turn" }
+-- };
+
+turncredentials_secret = "{{ turncredentials_secret }}";
+turncredentials = {
+{% for host in groups['turnserver'] %}
+     { type = "turns", host = "{{hostvars[host]['fqdn']}}", port = {{ turnserverport }}, transport = "tcp"}{{ ", " if not loop.last else "" }}
+{% endfor %}
+
 };
 
 --{% if authentication is defined and authentication == "token" %}
@@ -66,7 +74,8 @@ VirtualHost "{{ shardName }}"
         "pubsub";
         "ping"; -- Enable mod_ping
         "speakerstats";
-        "external_services";
+        "turncredentials";
+--        "external_services";
         "conference_duration";
         "muc_lobby_rooms";
         "av_moderation";
