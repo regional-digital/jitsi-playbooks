@@ -4,19 +4,19 @@
     name: 
       - vlan
     update_cache: yes
-  when: ansible_distribution == 'Debian'
+  when: private_vlan_ip is defined and ansible_distribution == 'Debian'
 
 - name: Add the 802.1q module
   modprobe:
     name: 8021q
     state: present
-  when: ansible_distribution == 'Debian'
+  when: private_vlan_ip is defined and ansible_distribution == 'Debian'
 
 - name: add module for 8021q persistent
   lineinfile:
     dest: /etc/modules
     line: 8021q
-  when: ansible_distribution == 'Debian'
+  when: private_vlan_ip is defined and ansible_distribution == 'Debian'
 
 - name: generate /etc/network/interfaces.d/99_vlan_{{ privateVLANID }}.conf
   template:
