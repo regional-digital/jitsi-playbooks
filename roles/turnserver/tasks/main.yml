@@ -15,34 +15,33 @@
     group: turnserver
     mode: '0755'
   with_items:
-    - /etc/coturn/
-    - /etc/coturn/certs/
+    - /etc/ssl/coturn/
 
 - name: create certificate
-  shell: /root/.acme.sh/acme.sh --issue --domain {{ turnservername }} --key-file /etc/coturn/certs/{{ turnservername }}.key --fullchain-file /etc/coturn/certs/{{ turnservername }}.pem --reloadcmd "systemctl restart coturn" --standalone --listen-v4 {{ acme_sh_additional_options | default('') }} --force
+  shell: /root/.acme.sh/acme.sh --issue --domain {{ fqdn }} --key-file /etc/ssl/coturn/{{ fqdn }}.key --fullchain-file /etc/ssl/coturn/{{ fqdn }}.pem --reloadcmd "systemctl restart coturn" --standalone --listen-v4 {{ acme_sh_additional_options | default('') }} --force
   args:
     warn: false
-    creates: /etc/coturn/certs/{{ turnservername }}.pem
+    creates: /etc/ssl/coturn/{{ fqdn }}.pem
   notify:
     - restart coturn
 
-- name: chmod&chown /etc/coturn/certs/{{ turnservername }}.key
+- name: chmod&chown /etc/ssl/coturn/{{ fqdn }}.key
   file:
     state: file
-    path: /etc/coturn/certs/{{ turnservername }}.key
+    path: /etc/ssl/coturn/{{ fqdn }}.key
     owner: turnserver
     group: turnserver
     mode: '0750'
   notify:
     - restart coturn
 
-- name: chmod&chown /etc/coturn/certs/{{ turnservername }}.pem
+- name: chmod&chown /etc/ssl/coturn/{{ fqdn }}.pem
   file:
     state: file
-    path: /etc/coturn/certs/{{ turnservername }}.pem
-    owner: turnserver
-    group: turnserver
-    mode: '0660'
+    path: /etc/ssl/coturn/{{ fqdn }}.pem
+    owner: root
+    group: root
+    mode: '0644'
   notify:
     - restart coturn
 
