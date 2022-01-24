@@ -2,5 +2,5 @@
 - hosts: jigasi
   gather_facts: true
   roles:
-    - jitsicommon
+    - common
     - jigasi
