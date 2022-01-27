@@ -1,6 +1,6 @@
 upstream prosody_upstream {
     hash $arg_room consistent;
-{% if is_Cluster is defined and is_Cluster == True %}
+{% if cluster_partner is defined %}
 {% for clusterNode in groups[shardName] %}
     server {{ clusterNode }}:5280; # {{ shardName }}
 {% endfor %}
