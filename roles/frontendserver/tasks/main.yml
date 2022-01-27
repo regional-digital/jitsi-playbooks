@@ -263,7 +263,7 @@
   notify:
     - reload nginx
 
-- name: /etc/nginx/conf.d/prosody_upstream.conf
+- name: generate /etc/nginx/conf.d/prosody_upstream.conf
   template:
     src: nginx/etc/nginx/conf.d/prosody_upstream.conf.j2
     dest: /etc/nginx/conf.d/prosody_upstream.conf
@@ -272,6 +272,14 @@
     mode: "0770"
     backup: yes
   when: cluster_partner is defined
+  notify:
+    - reload nginx
+
+- name: remove /etc/nginx/conf.d/prosody_upstream.conf
+  file:
+    name: /etc/nginx/conf.d/prosody_upstream.conf
+    state: absent
+  when: cluster_partner is not defined
   notify:
     - reload nginx
 
