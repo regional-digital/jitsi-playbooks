@@ -103,8 +103,8 @@
 
 - name: activate nginx vhosts for {{ instance }}
   ansible.builtin.file:
-    src: /etc/nginx/sites-available/{{ instance }}.conf
-    dest: /etc/nginx/sites-enabled/{{ instance }}.conf
+    src: /etc/nginx/sites-available/{{ deployto | default(instance) }}.conf
+    dest: /etc/nginx/sites-enabled/{{ deployto | default(instance) }}.conf
     owner: root
     group: adm
     mode: '0664'
@@ -154,7 +154,7 @@
   local_action: stat path=files/jitsi-www/instances/{{ instance }}/wwwroot/interface_config.js
   register: interface_config_exists_local
 
-- name: generate meet-config file for instance {{ instance }} from template
+- name: generate interface_config.js file for instance {{ instance }} from template
   template:
     src: interface_config{{ usedWebVersion }}.js.j2
     dest: /var/www/jitsi-meet-{{ deployto | default(instance) }}/interface_config.js
