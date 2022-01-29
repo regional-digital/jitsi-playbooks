@@ -1,0 +1,5 @@
+---
+- hosts: nagios_agent
+  gather_facts: true
+  roles:
+    - nagios_agent

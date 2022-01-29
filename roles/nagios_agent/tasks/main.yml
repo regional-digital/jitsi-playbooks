@@ -7,13 +7,13 @@
     mode: '0600'
     backup: yes
   with_items:
-    - check-mk-agent_2.0.0b3-1_all.deb
+    - check-mk-agent_2.0.0p17-1_all.deb
 
 - name: install package(s) on host
   apt:
     deb: "/opt/ansiblepackages/{{ item }}"
   with_items:
-    - check-mk-agent_2.0.0b3-1_all.deb
+    - check-mk-agent_2.0.0p17-1_all.deb
 
 - name: /etc/check_mk/fileinfo.cfg
   template:
@@ -24,12 +24,41 @@
     mode: "0644"
   when: "'nagios_agent' in group_names"
 
-- name: Add ssh key for nagios agent
+- name: create user monitoring
+  command: adduser --gecos "" --disabled-password monitoring
+  args:
+    creates: /home/monitoring
+
+- name: create folder /home/monitoring/.ssh
+  file:
+    path: /home/monitoring/.ssh
+    state: directory
+    owner: monitoring
+    group: monitoring
+    mode: '0750'
+
+- name: generate /home/monitoring/.ssh/authorized_keys
+  template:
+    src: authorized_keys.j2
+    dest: /home/monitoring/.ssh/authorized_keys
+    owner: monitoring
+    group: monitoring
+    mode: "0750"
+
+- name: Add ssh key for monitoring user
   lineinfile:
-    path: /home/gabriel/.ssh/authorized_keys
-    line: command="sudo /usr/bin/check_mk_agent" ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDC9tuj4SMG7FxTg/+b4NvZJC4t8C6qRFwMgIpFt5ZGkz0pVYIT1JGR8nVKHLnQpiwDSS5xGCWoXUBXWeot2oLu0xfU9lnYP8BFtYAEkRcKkZRqfKdQrEIjHbRlGFcrzG0SVC0OH6vsa7s7b3wdToTuk7hKNovRYavL5+P1pTm9m2ixIWFDrVeBSeKWKGG2mHkzsSmheGDHogFYbuL+ZoD9kDxqKtnIiBMM4E8+QP2aR5PiY63vbJRtjGOlWLNnI72Rbb+RfvF5zLCZrsLAnydmrfWul1CtrTf0pBEEOzBe1HDEwEGPXaNxLoJO/4dLpp2XZ9SnsIjSX78kkH48+r/Gj70xCvrF1SNoOsXKi1JC18OlsSkcEgyaFoexjQ0BPKvvCxwJzx15EGfVQG0Wlw4edxC+T/tnDGwzhFuVWT1BaSXbz2UYdLIGTPM2dWH8lqCDXdT0THnJAtEVJ3Xnsg0pfrei4bKv17lZWP8+Q8aSlWFwuESKE9Zr1SVgWzYUpKM= nagios@stats.buehl.digital
+    path: /home/monitoring/.ssh/authorized_keys
+    line: "{{ monitoring_user_public_key }}"
     backup: yes
   when: "'nagios_agent' in group_names"
+
+- name: generate /etc/sudoers.d/monitoring
+  template:
+    src: sudoers_monitoring.j2
+    dest: /etc/sudoers.d/monitoring
+    owner: root
+    group: root
+    mode: "0600"
 
 - name: disable check_mk-agent
   systemd:
