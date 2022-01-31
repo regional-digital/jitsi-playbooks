@@ -72,6 +72,7 @@ VirtualHost "{{ shardName }}"
         "conference_duration";
         "muc_lobby_rooms";
         "av_moderation";
+        "muc_breakout_rooms";
 {% if authentication is defined and authentication == "token" %}
 --        "presence_identity";
 {% endif %}
@@ -83,6 +84,7 @@ VirtualHost "{{ shardName }}"
     c2s_require_encryption = false
     lobby_muc = "lobby.{{ shardName }}"
     main_muc = "conference.{{ shardName }}"
+    breakout_rooms_muc = "breakout.{{ shardName }}"
     -- muc_lobby_whitelist = { "recorder.{{ shardName }}" } -- Here we can whitelist jibri to enter lobby enabled rooms
 
 Component "conference.{{ shardName }}" "muc"
@@ -138,3 +140,11 @@ Component "lobby.{{ shardName }}" "muc"
     restrict_room_creation = true
     muc_room_locking = false
     muc_room_default_public_jids = true
+
+--Internal muc component for enabling Breakout Rooms
+Component "breakout.{{ shardName }}" "muc"
+	restrict_room_creation = true
+	storage = "memory"
+	admins = { "focus@auth.{{ shardName }}" }
+	muc_room_locking = false
+	muc_room_default_public_jids = true
