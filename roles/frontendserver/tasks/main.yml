@@ -25,11 +25,11 @@
     mode: '0600'
     backup: yes
   with_items:
-    - jicofo_1.0-813-1_all.deb
-    - jitsi-meet-prosody_1.0.5415-1_all.deb
-    - jitsi-meet-tokens_1.0.5415-1_all.deb
-    - jitsi-meet-web_1.0.5415-1_all.deb
-    - jitsi-meet-web-config_1.0.5415-1_all.deb
+    - jicofo_1.0-846-1_all.deb
+    - jitsi-meet-prosody_1.0.5818-1_all.deb
+    - jitsi-meet-tokens_1.0.5818-1_all.deb
+    - jitsi-meet-web_1.0.5818-1_all.deb
+    - jitsi-meet-web-config_1.0.5818-1_all.deb
 
 - name: Copy Prosody Package to Ubuntu-host
   ansible.builtin.copy:
@@ -40,7 +40,7 @@
     mode: '0600'
     backup: yes
   with_items:
-    - prosody_0.11.10-1~focal1_amd64.deb
+    - prosody_0.11.13-1~focal1_amd64.deb
   when: "ansible_distribution == 'Ubuntu'"
 
 - name: Copy Prosody Package to Debian-host
@@ -312,18 +312,8 @@
   apt:
     deb: "/opt/ansiblepackages/{{ item }}"
   with_items:
-    - prosody_0.11.10-1~focal1_amd64.deb
+    - prosody_0.11.13-1~focal1_amd64.deb
   when: "ansible_distribution == 'Ubuntu'"
-
-- name: Install Jitsi Packages
-  apt:
-    deb: "/opt/ansiblepackages/{{ item }}"
-  with_items:
-    - jicofo_1.0-813-1_all.deb
-    - jitsi-meet-prosody_1.0.5415-1_all.deb
-    - jitsi-meet-tokens_1.0.5415-1_all.deb
-    - jitsi-meet-web_1.0.5415-1_all.deb
-    - jitsi-meet-web-config_1.0.5415-1_all.deb
 
 - name: Install Prosody Package on Debian
   apt:
@@ -331,6 +321,22 @@
   with_items:
     - prosody_0.11.10-1~bullseye1_amd64.deb
   when: "ansible_distribution == 'Debian'"
+
+- name: Install Jitsi Packages
+  apt:
+    deb: "/opt/ansiblepackages/{{ item }}"
+  with_items:
+    - jicofo_1.0-846-1_all.deb
+    - jitsi-meet-prosody_1.0.5818-1_all.deb
+    - jitsi-meet-web_1.0.5818-1_all.deb
+    - jitsi-meet-web-config_1.0.5818-1_all.deb
+
+- name: jitsi-meet-tokens
+  apt:
+    deb: "/opt/ansiblepackages/{{ item }}"
+  with_items:
+    - jitsi-meet-tokens_1.0.5818-1_all.deb
+  when: authentication is defined
 
 - name: create /etc/systemd/system/prosody.service.d
   file:
@@ -449,7 +455,7 @@
       (.*)Enter new password(.*): "{{ prosody_user_focus_password }}"
       (.*)Retype new password(.*): "{{ prosody_user_focus_password }}"
   args:
-    creates: /var/lib/prosody/auth%2e{{ shardName }}/accounts/jigasi.dat
+    creates: /var/lib/prosody/auth%2e{{ shardName }}/accounts/focus.dat
   notify:
     - restart prosody
 
