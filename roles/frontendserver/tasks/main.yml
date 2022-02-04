@@ -498,6 +498,17 @@
   notify:
     - restart jicofo
 
+- name: generate /etc/jitsi/jicofo/logging.properties
+  template:
+    src: jicofo/logging.properties.j2
+    dest: /etc/jitsi/jicofo/logging.properties
+    owner: jicofo
+    group: jitsi
+    mode: "0644"
+    backup: yes
+  notify:
+    - restart jicofo
+
 - name: remove /etc/jitsi/jicofo/sip-communicator.properties
   file:
     name: /etc/jitsi/jicofo/sip-communicator.properties
