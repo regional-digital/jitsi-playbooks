@@ -31,6 +31,20 @@ videobridge {
             port = "9090"
          }
     }
+    ice {
+        tcp {
+            enabled = true
+        }
+    }
+    load-management {
+        reducer-enabled = false
+        load-measurements {
+            packet-rate {
+                load-threshold = 100000
+                recovery-threshold = 80000
+            }
+        }
+    }
     octo {
         enabled = true
         bind-address = "{{ internal_interface }}"
