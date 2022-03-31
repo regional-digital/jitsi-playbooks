@@ -96,6 +96,7 @@ Component "conference.{{ shardName }}" "muc"
         "polls";
 {% if authentication is defined and authentication == "token" %}
         "token_verification";
+        "token_moderation";
 {% endif %}
     }
     admins = { "focus@auth.{{ shardName }}" }

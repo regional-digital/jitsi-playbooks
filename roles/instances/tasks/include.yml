@@ -141,6 +141,7 @@
     mode: '0755'
   when: redeploy is defined and usedWebVersion is defined
 
+# Changes to variable edition
 - name: copy wwwroot of instance {{ instance }}
   ansible.builtin.copy:
     src: files/jitsi-www/instances/{{ instance }}/wwwroot/
@@ -149,6 +150,25 @@
     owner: www-data
     group: www-data
     mode: '0755'
+
+# Changes to variable edition
+
+- name: check if translation file exists in instance-dir on ansible host
+  local_action: "stat path=files/jitsi-www/instances/{{ instance }}/wwwroot/lang/main-de.json"
+  register: main_de_json_config_exists_local
+
+- name: "generate main.de.json file for instance {{ instance }} from template"
+  template:
+    src: "wwwroot/lang/main-de{{ usedWebVersion }}.json.j2"
+    dest: "/var/www/jitsi-meet-{{ deployto | default(instance) }}/lang/main-de.json"
+    owner: www-data
+    group: www-data
+    mode: '0775'
+    backup: yes
+  when: not main_de_json_config_exists_local.stat.exists
+
+
+
 
 - name: check if interface_config.js exists in instance-dir on ansible host
   local_action: stat path=files/jitsi-www/instances/{{ instance }}/wwwroot/interface_config.js

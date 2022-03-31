@@ -421,6 +421,13 @@
   notify:
     - restart prosody
 
+- name: Copy Moderation Lua Plugin
+  copy:
+    src: mod_token_moderation.lua
+    dest: /usr/share/jitsi-meet/prosody-plugins/mod_token_moderation.lua
+  notify:
+    - restart prosody
+
 - name: create /var/lib/prosody/auth%2e{{ shardName }}
   file:
     state: directory

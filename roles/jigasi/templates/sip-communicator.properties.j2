@@ -7,6 +7,9 @@
 org.jitsi.jigasi.DEFAULT_JVB_ROOM_NAME=siptest@conference.{{ jigasi_hostname }}
 net.java.sip.communicator.impl.protocol.SingleCallInProgressPolicy.enabled=false
 
+# h2invent fixing the one-way-audio issue
+org.jitsi.impl.neomedia.transform.csrc.CsrcTransformEngine.DISCARD_CONTRIBUTING_SOURCES=true
+
 # Should be enabled when using translator mode
 #net.java.sip.communicator.impl.neomedia.audioSystem.audiosilence.captureDevice_list=["AudioSilenceCaptureDevice:noTransferData"]
 
