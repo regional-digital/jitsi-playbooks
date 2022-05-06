@@ -17,23 +17,7 @@
   apt:
     name:
       - default-jre-headless
-
-- name: Copy Jitsi Package to host
-  ansible.builtin.copy:
-    src: files/{{ item }}
-    dest: "/opt/ansiblepackages/{{ item }}"
-    owner: root
-    group: root
-    mode: '0600'
-    backup: yes
-  with_items:
-    - jitsi-videobridge2_2.1-595-g3637fda4-1_all.deb
-
-- name: Install Jitsi Packages
-  apt:
-    deb: "/opt/ansiblepackages/{{ item }}"
-  with_items:
-    - jitsi-videobridge2_2.1-595-g3637fda4-1_all.deb
+      - jitsi-videobridge2
 
 - name: generate /etc/jitsi/videobridge/logging.properties
   template:

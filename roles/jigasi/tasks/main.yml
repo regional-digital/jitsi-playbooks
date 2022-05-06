@@ -1,24 +1,8 @@
 ---
-- name: Copy Jigasi Package to host
-  ansible.builtin.copy:
-    src: files/{{ item }}
-    dest: "/opt/jitispackages/{{ item }}"
-    owner: root
-    group: root
-    mode: '0600'
-    backup: yes
-  with_items:
-    - jigasi_1.1-195-g65ef768-1_amd64.deb
-
-- name: Install Jigasi Packages
-  apt:
-    deb: "/opt/jitispackages/{{ item }}"
-  with_items:
-    - jigasi_1.1-195-g65ef768-1_amd64.deb
-
 - name: install asterisk
   apt:
     name:
+      - jigasi
       - asterisk
 
 - name: generate /etc/jitsi/jigasi/config

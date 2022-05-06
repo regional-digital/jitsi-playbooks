@@ -1,0 +1,28 @@
+- name: Set correct permission on jitsi logs directory for rsyslog
+  file:
+    path: /var/log/jitsi
+    mode: +rx
+    state: directory
+
+- name: Set permission for log files of jitsi
+  file:
+    path: "/var/log/jitsi/{{ item }}.log"
+    owner: "{{ item }}"
+    group: syslog
+  with_items: "{{ rsyslog_jitsi_service }}"
+
+- name: Copy 50-default configutation
+  template:
+    src: 50-default.conf.j2
+    dest: /etc/rsyslog.d/50-default.conf
+
+- name: "Copy 60-service.conf configutation"
+  template:
+    src: 60-service.conf.j2
+    dest: "/etc/rsyslog.d/60-{{ item }}.conf"
+  with_items: "{{ rsyslog_jitsi_service }}"
+
+- name: restart rsyslog
+  service:
+    name: rsyslog
+    state: restarted

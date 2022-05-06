@@ -4,6 +4,11 @@
     url: https://prosody.im/files/prosody-debian-packages.key
     state: present
 
+- name: Install Jitsi Repo signing key
+  apt_key:
+    url: https://download.jitsi.org/jitsi-key.gpg.key 
+    state: present
+
 - name: install stuff
   apt:
     name:
@@ -15,45 +20,6 @@
       - default-jre-headless
       - python3-pexpect
       - liblua5.2-dev
-
-- name: Copy Jitsi Packages to host
-  ansible.builtin.copy:
-    src: files/{{ item }}
-    dest: "/opt/ansiblepackages/{{ item }}"
-    owner: root
-    group: root
-    mode: '0600'
-    backup: yes
-  with_items:
-    - jicofo_1.0-846-1_all.deb
-    - jitsi-meet-prosody_1.0.5818-1_all.deb
-    - jitsi-meet-tokens_1.0.5818-1_all.deb
-    - jitsi-meet-web_1.0.5818-1_all.deb
-    - jitsi-meet-web-config_1.0.5818-1_all.deb
-
-- name: Copy Prosody Package to Ubuntu-host
-  ansible.builtin.copy:
-    src: files/{{ item }}
-    dest: "/opt/ansiblepackages/{{ item }}"
-    owner: root
-    group: root
-    mode: '0600'
-    backup: yes
-  with_items:
-    - prosody_0.11.13-1~focal1_amd64.deb
-  when: "ansible_distribution == 'Ubuntu'"
-
-- name: Copy Prosody Package to Debian-host
-  ansible.builtin.copy:
-    src: files/{{ item }}
-    dest: "/opt/ansiblepackages/{{ item }}"
-    owner: root
-    group: root
-    mode: '0600'
-    backup: yes
-  with_items:
-    - prosody_0.11.10-1~bullseye1_amd64.deb
-  when: "ansible_distribution == 'Debian'"
 
 #first care about nginx
 - name: /etc/nginx/nginx.conf
@@ -308,34 +274,21 @@
     - { name: 'jitsi-meet-tokens', question: 'jitsi-meet-prosody/prosody_config', value: '/etc/prosody/conf.avail/{{ hostname }}.cfg.lua', vtype: 'string' }
     - { name: 'jitsi-meet-web-config', question: 'jitsi-meet/cert-choice', value: "Generate a new self-signed certificate (You will later get a chance to obtain a Let's encrypt certificate)", vtype: 'select' }
 
-- name: Install Prosody Package on Ubuntu
+- name: Install Packages
   apt:
-    deb: "/opt/ansiblepackages/{{ item }}"
+    name: "{{ item }}"
   with_items:
-    - prosody_0.11.13-1~focal1_amd64.deb
-  when: "ansible_distribution == 'Ubuntu'"
-
-- name: Install Prosody Package on Debian
-  apt:
-    deb: "/opt/ansiblepackages/{{ item }}"
-  with_items:
-    - prosody_0.11.10-1~bullseye1_amd64.deb
-  when: "ansible_distribution == 'Debian'"
-
-- name: Install Jitsi Packages
-  apt:
-    deb: "/opt/ansiblepackages/{{ item }}"
-  with_items:
-    - jicofo_1.0-846-1_all.deb
-    - jitsi-meet-prosody_1.0.5818-1_all.deb
-    - jitsi-meet-web_1.0.5818-1_all.deb
-    - jitsi-meet-web-config_1.0.5818-1_all.deb
+    - prosody
+    - jicofo
+    - jitsi-meet-prosody
+    - jitsi-meet-web
+    - jitsi-meet-web-config
 
 - name: jitsi-meet-tokens
   apt:
-    deb: "/opt/ansiblepackages/{{ item }}"
+    name: "{{ item }}"
   with_items:
-    - jitsi-meet-tokens_1.0.5818-1_all.deb
+    - jitsi-meet-tokens
   when: authentication is defined
 
 - name: create /etc/systemd/system/prosody.service.d
@@ -520,4 +473,3 @@
   file:
     name: /etc/jitsi/jicofo/sip-communicator.properties
     state: absent
-

@@ -1,0 +1,12 @@
+$ModLoad imfile    #Load the imfile input module 
+$InputFilePollInterval 10
+$InputFileName  /var/log/jitsi/{{ rsyslog_jitsi_service }}.log
+$InputFileTag jitsi-{{ rsyslog_jitsi_service }}:
+$InputFileStateFile stat-jitsi-{{ rsyslog_jitsi_service }}
+$InputFileSeverity Info
+$InputRunFileMonitor
+$template {{ rsyslog_jitsi_service }}_log, "  %msg% "
+
+
+if $programname == 'jitsi-{{ rsyslog_jitsi_service }}' then @{{ rsyslog_server }}:514;{{ rsyslog_jitsi_service }}_log
+if $programname == 'jitsi-{{ rsyslog_jitsi_service }}' then stop
