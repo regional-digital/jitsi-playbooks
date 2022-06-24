@@ -4,6 +4,18 @@
     url: https://download.jitsi.org/jitsi-key.gpg.key 
     state: present
 
+- name: Add Repo for jitsi
+  apt_repository:
+    repo: "deb http://download.jitsi.org stable/"
+    filename: jitsi
+    state: present
+
+- name: Update package cache
+  apt:
+    autoclean: yes
+    cache_valid_time: 0
+    update_cache: yes
+
 - name: Set debconf-answers for jitsi-meet
   debconf:
     name: "{{ item.name }}"

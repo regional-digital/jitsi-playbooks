@@ -183,3 +183,18 @@
     mode: '0775'
     backup: yes
   when: interface_config_exists_local.stat.exists == False
+
+
+- name: check if body_html exists in instance-dir on ansible host
+  local_action: stat path=files/jitsi-www/instances/{{ instance }}/wwwroot/body.html
+  register: body_html_exists_local
+
+- name: generate body_html file for instance {{ instance }} from template
+  template:
+    src: wwwroot/body.html.j2
+    dest: /var/www/jitsi-meet-{{ deployto | default(instance) }}/body.html
+    owner: www-data
+    group: www-data
+    mode: '0775'
+    backup: yes
+  when: body_html_exists_local.stat.exists == False

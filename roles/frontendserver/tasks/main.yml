@@ -9,6 +9,20 @@
     url: https://download.jitsi.org/jitsi-key.gpg.key 
     state: present
 
+
+- name: Add Repo for jitsi
+  apt_repository:
+    repo: "deb http://download.jitsi.org stable/"
+    filename: jitsi
+    state: present
+
+- name: Add Repo for Prosody
+  apt_repository:
+    repo: "https://packages.prosody.im/debian focal main"
+    filename: prosody
+    state: present
+
+
 - name: install stuff
   apt:
     name:
