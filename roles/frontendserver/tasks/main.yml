@@ -16,11 +16,11 @@
     filename: jitsi
     state: present
 
-- name: Add Repo for Prosody
-  apt_repository:
-    repo: "https://packages.prosody.im/debian focal main"
-    filename: prosody
-    state: present
+#- name: Add Repo for Prosody
+#  apt_repository:
+#    repo: "deb https://packages.prosody.im/debian focal main"
+#    filename: prosody
+#    state: present
 
 
 - name: install stuff

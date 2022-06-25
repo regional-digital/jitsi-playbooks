@@ -1234,6 +1234,11 @@ var config = {
     // dialInNumbersUrl: 'https://conference-mapper.jitsi.net/v1/access/dids',
     // dialInConfCodeUrl: 'https://conference-mapper.jitsi.net/v1/access',
     //
+{% if instanceVars.dialInNumbers is defined %}
+dialInConfCodeUrl: 'https://{{ instance }}/conferenceMapper',
+dialInNumbersUrl: 'https://{{ instance }}/numbers.json',
+{% endif %}
+
 
     // List of undocumented settings used in jitsi-meet
     /**
@@ -1410,6 +1415,10 @@ var config = {
     //     tileTime: 5000
     // },
 
+{% if instanceVars.additionalConfig is defined %}
+{{ instanceVars.additionalConfig }}
+{% endif %}
+
     // Allow all above example options to include a trailing comma and
     // prevent fear when commenting out the last value.
     makeJsonParserHappy: 'even if last key had a trailing comma'
@@ -1418,3 +1427,4 @@ var config = {
 };
 
 /* eslint-enable no-unused-vars, no-var */
+

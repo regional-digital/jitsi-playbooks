@@ -1,8 +1,19 @@
 ---
+- name: Install Jitsi Repo signing key
+  apt_key:
+    url: https://download.jitsi.org/jitsi-key.gpg.key 
+    state: present
+
+- name: Add Repo for jitsi
+  apt_repository:
+    repo: "deb http://download.jitsi.org stable/"
+    filename: jitsi
+    state: present
+
 - name: install asterisk
   apt:
     name:
-      - jigasi
+      - jigasi=1.1-178*
       - asterisk
 
 - name: generate /etc/jitsi/jigasi/config

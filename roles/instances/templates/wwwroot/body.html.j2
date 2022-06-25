@@ -1,4 +1,10 @@
 <style>
+{% if maintenance_date is defined %}
+#warning_container {
+  width: 100%;
+  position: relative;
+}
+
 .h2_warning_box {
   width: 70%;
   position: absolute;
@@ -18,14 +24,25 @@
   animation: fadeout 1s 20s cubic-bezier(0.6, -0.28, 0.74, 0.05) both;
 }
 
-#warning_container {
-  width: 100%;
-  position: relative;
+@keyframes fadeout {
+from {top: 3px;}
+to {top: -100px;} 
 }
+{% endif %}
+
+{% if instanceVars.dont_show_enter_room is defined and instanceVars.dont_show_enter_room | bool %}
+#enter_room {
+  visibility: hidden;
+}
+{% endif %}
+
 </style>
+
+{% if maintenance_date is defined %}
 <div id="warning_container">
     <div class="h2_warning_box">
     Hinweis:<br>
     Am {{ maintenance_date }} finden Wartungsarbeiten statt. unser System wird deshalb ab ca. 9 Uhr bis ca. 14 Uhr nicht verfügbar sein. Bitte weichen Sie in dieser Zeit auf meet.ffmuc.net aus. Vielen Dank für Ihr Verständnis.
     </div>
 </div>
+{% endif %}
