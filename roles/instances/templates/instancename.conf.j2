@@ -143,6 +143,21 @@ server {
        vhost_traffic_status_bypass_stats on;
     }
 
+    # Enable websockets to bridges
+    location ~ ^/colibri-relay-ws/{{ videobridgeNamePrefix }}([0-9]+)/(.*) {
+       resolver 127.0.0.53;
+       proxy_pass http://{{ videobridgeNamePrefix }}$1{{ dnsdomain | default('') }}:9090/colibri-relay-ws/{{ videobridgeNamePrefix }}$1/$2$is_args$args;
+       proxy_http_version 1.1;
+       proxy_set_header Upgrade $http_upgrade;
+       proxy_set_header Connection "Upgrade";
+       tcp_nodelay on;
+       proxy_read_timeout      900s;
+       proxy_connect_timeout   900s;
+       proxy_send_timeout      900s;
+       send_timeout            900s;
+       vhost_traffic_status_bypass_stats on;
+    }
+
     location ~ ^/([^/?&:'"]+)$ {
         try_files $uri @root_path;
     }

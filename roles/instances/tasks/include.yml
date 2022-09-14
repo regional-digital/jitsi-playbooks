@@ -151,6 +151,15 @@
     group: www-data
     mode: '0755'
 
+- name: generate recommendedBrowsers file for instance {{ instance }} from template
+  template:
+    src: wwwroot/recommendedBrowsers.html.j2
+    dest: /var/www/jitsi-meet-{{ deployto | default(instance) }}/static/recommendedBrowsers.html
+    owner: www-data
+    group: www-data
+    mode: '0775'
+    backup: yes
+
 # Changes to variable edition
 
 - name: check if translation file exists in instance-dir on ansible host
@@ -166,8 +175,6 @@
     mode: '0775'
     backup: yes
   when: not main_de_json_config_exists_local.stat.exists
-
-
 
 
 - name: check if interface_config.js exists in instance-dir on ansible host
