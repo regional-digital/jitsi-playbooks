@@ -46,7 +46,8 @@ VirtualHost "{{ shardName }}"
 {% if authentication is defined and authentication == "token" %}
     app_id="{{ app_id }}"
     app_secret="{{ app_secret }}"
-    allow_empty_token=false
+    enable_domain_verification = false
+    allow_empty_token = false
 {% endif %}
     -- Assign this host a certificate for TLS, otherwise it would use the one
     -- set in the global section (if any).

@@ -114,32 +114,87 @@
 
 - name: set usedWebVersion to match path
   set_fact:
-    usedWebVersion: "-{{ instanceVars.usedWebVersion }}"
+    usedWebVersion: "{{ instanceVars.usedWebVersion }}"
   when: instanceVars.usedWebVersion is defined
 
 - name: set usedWebVersion to match path
   set_fact:
-    usedWebVersion: "-{{ defaultWebVersion }}"
+    usedWebVersion: "{{ defaultWebVersion }}"
   when: instanceVars.usedWebVersion is not defined
 
 - name: generate meet-config file for instance {{ instance }} from template
   template:
-    src: meet-config{{ usedWebVersion }}.js.j2
+    src: meet-config-{{ usedWebVersion }}.js.j2
     dest: /etc/jitsi/meet/{{ deployto | default(instance) }}-config.js
     owner: www-data
     group: www-data
     mode: '0775'
     backup: yes
 
-- name: copy/update wwwroot-template for instance {{ instance }} from jitsi-meet{{ usedWebVersion}}
+# Copy and redeploy Jitsi WWW Root from Source
+- name: Delete current DEB jitsi-meet-web_{{ usedWebVersion}} download
+  file:
+    path: "/tmp/jitsi-meet-web_{{ usedWebVersion}}_all.deb"
+    state: absent
+  when: redownload is defined
+
+- name: Delete current extration directory  for jitsi-meet-web_{{ usedWebVersion}}
+  file:
+    path: "/tmp/jitsi-meet-web_{{ usedWebVersion}}"
+    state: absent
+  when: redownload is defined
+
+- name: Check if DEB Package is already downloaded
+  stat:
+    path: "/tmp/jitsi-meet-web_{{ usedWebVersion}}_all.deb"
+  register: jitsi_meet_package_stats
+
+- name: Get .deb package from Jitsi Source
+  get_url:
+    url: "https://download.jitsi.org/stable/jitsi-meet-web_{{ usedWebVersion}}_all.deb"
+    dest: "/tmp/jitsi-meet-web_{{ usedWebVersion}}_all.deb"
+  when:
+    - not jitsi_meet_package_stats.stat.exists
+    - redeploy is defined and usedWebVersion is defined
+
+- name: Create directory to extract DEB package content for {{ usedWebVersion}}
+  file:
+    path: "/tmp/jitsi-meet-web_{{ usedWebVersion}}"
+    state: directory
+  when: redeploy is defined and usedWebVersion is defined
+
+- name: extract DEB Package of {{ usedWebVersion}}
+  command: "dpkg -x /tmp/jitsi-meet-web_{{ usedWebVersion}}_all.deb /tmp/jitsi-meet-web_{{ usedWebVersion}}"
+  when: 
+    - not jitsi_meet_package_stats.stat.exists
+    - redeploy is defined and usedWebVersion is defined
+
+- name: Delete existing www root for instance {{ instance }}
+  file:
+    path: /var/www/jitsi-meet-{{ deployto | default(instance) }}
+    state: absent
+  when: redeploy is defined and usedWebVersion is defined
+
+- name: "copy/update wwwroot-template for instance {{ instance }} from template jitsi-meet-{{ usedWebVersion}}"
   ansible.builtin.copy:
-    src: "files/jitsi-www/base/jitsi-meet{{ usedWebVersion}}/"
+    src: "/tmp/jitsi-meet-web_{{ usedWebVersion}}/usr/share/jitsi-meet/"
     dest: /var/www/jitsi-meet-{{ deployto | default(instance) }}
     local_follow: False
     owner: www-data
     group: www-data
     mode: '0755'
+    remote_src: true
   when: redeploy is defined and usedWebVersion is defined
+
+#- name: copy/update wwwroot-template for instance {{ instance }} from jitsi-meet-{{ usedWebVersion}}
+#  ansible.builtin.copy:
+#    src: "files/jitsi-www/base/jitsi-meet-{{ usedWebVersion}}/"
+#    dest: /var/www/jitsi-meet-{{ deployto | default(instance) }}
+#    local_follow: False
+#    owner: www-data
+#    group: www-data
+#    mode: '0755'
+#  when: redeploy is defined and usedWebVersion is defined
 
 # Changes to variable edition
 - name: copy wwwroot of instance {{ instance }}
@@ -168,7 +223,7 @@
 
 - name: "generate main.de.json file for instance {{ instance }} from template"
   template:
-    src: "wwwroot/lang/main-de{{ usedWebVersion }}.json.j2"
+    src: "wwwroot/lang/main-de-{{ usedWebVersion }}.json.j2"
     dest: "/var/www/jitsi-meet-{{ deployto | default(instance) }}/lang/main-de.json"
     owner: www-data
     group: www-data
@@ -183,7 +238,7 @@
 
 - name: generate interface_config.js file for instance {{ instance }} from template
   template:
-    src: interface_config{{ usedWebVersion }}.js.j2
+    src: interface_config-{{ usedWebVersion }}.js.j2
     dest: /var/www/jitsi-meet-{{ deployto | default(instance) }}/interface_config.js
     owner: www-data
     group: www-data
