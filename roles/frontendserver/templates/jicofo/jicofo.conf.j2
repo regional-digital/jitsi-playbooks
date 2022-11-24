@@ -12,9 +12,18 @@ jicofo {
 {% endif %}
   xmpp: {
     client: {
+      domain: auth.{{ shardName }}
+      xmpp-domain: {{ shardName }}
       client-proxy: focus.{{ shardName }}
       conference-muc-jid = conference.{{ shardName }}
       disable-certificate-verification = true
+
+      enabled = true
+      hostname = "localhost"
+      port = 5222
+      username = "focus"
+      password = "{{ jicofo_auth_password }}"
+
     }
     trusted-domains: [ "recorder.{{ shardName }}" ]
   }
