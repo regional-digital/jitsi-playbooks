@@ -13,7 +13,8 @@
 - name: install asterisk
   apt:
     name:
-      - jigasi=1.1-231*
+      - jigasi 
+#=1.1-231*
       - asterisk
 
 - name: generate /etc/jitsi/jigasi/config

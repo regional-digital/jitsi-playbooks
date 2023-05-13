@@ -21,13 +21,6 @@ host={{ sip_provider_domain }}
 fromdomain={{ sip_provider_domain }}
 qualify=yes
 insecure=invite
-disallow=all
-dtmfmode=auto
-allow=g722
-allow=ulaw
-allow=alaw
-allow=gsm
-allow=g726
 
 {% endfor %}
 
@@ -36,9 +29,3 @@ type=friend
 context=meine-telefone
 secret={{ jigasi_user_pw }}
 host=dynamic
-disallow=all
-allow=g722
-allow=ulaw
-allow=alaw
-allow=gsm
-allow=g726
