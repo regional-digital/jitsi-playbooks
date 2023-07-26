@@ -260,3 +260,18 @@
     mode: '0775'
     backup: yes
   when: body_html_exists_local.stat.exists == False
+
+
+- name: check if close2_html exists in instance-dir on ansible host
+  local_action: stat path=files/jitsi-www/instances/{{ instance }}/wwwroot/static/close2.html
+  register: body_html_exists_local
+
+- name: generate close2_html file for instance {{ instance }} from template
+  template:
+    src: wwwroot/close2.html.j2
+    dest: /var/www/jitsi-meet-{{ deployto | default(instance) }}/static/close2.html
+    owner: www-data
+    group: www-data
+    mode: '0775'
+    backup: yes
+  when: body_html_exists_local.stat.exists == False

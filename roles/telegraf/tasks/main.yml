@@ -4,9 +4,16 @@
     state: present
   when: "'telegraf' in group_names"
 
+- name: generate /etc/apt/trusted.gpg.d/influxdata-archive_compat.asc
+  template:
+    src: influxdata-archive_compat.asc.j2
+    dest: /etc/apt/trusted.gpg.d/influxdata-archive_compat.asc
+    backup: yes
+  when: "'telegraf' in group_names"
+
 - name: Install Influxdb Repository
   apt_repository:
-    repo: deb https://repos.influxdata.com/ubuntu focal stable
+    repo: deb [signed-by=/etc/apt/trusted.gpg.d/influxdata-archive_compat.asc] https://repos.influxdata.com/ubuntu focal stable
     state: present
     filename: influxdb
     update_cache: yes

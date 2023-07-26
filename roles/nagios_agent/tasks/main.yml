@@ -1,19 +1,20 @@
-- name: copy package(s) to host
-  copy:
-    src: files/{{ item }}
-    dest: "/opt/ansiblepackages/{{ item }}"
-    owner: root
-    group: root
-    mode: '0600'
-    backup: yes
-  with_items:
-    - check-mk-agent_2.0.0p17-1_all.deb
+---
+#- name: copy package(s) to host
+#  copy:
+#    src: files/{{ item }}
+#    dest: "/opt/ansiblepackages/{{ item }}"
+#    owner: root
+#    group: root
+#    mode: '0600'
+#    backup: yes
+#  with_items:
+#    - check-mk-agent_2.0.0p17-1_all.deb
 
-- name: install package(s) on host
-  apt:
-    deb: "/opt/ansiblepackages/{{ item }}"
-  with_items:
-    - check-mk-agent_2.0.0p17-1_all.deb
+#- name: install package(s) on host
+#  apt:
+#    deb: "/opt/ansiblepackages/{{ item }}"
+#  with_items:
+#    - check-mk-agent_2.0.0p17-1_all.deb
 
 - name: /etc/check_mk/fileinfo.cfg
   template:
